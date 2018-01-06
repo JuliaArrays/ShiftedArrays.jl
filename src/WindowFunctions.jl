@@ -1,5 +1,11 @@
 module WindowFunctions
 
-# package code goes here
+using Missings
 
-end # module
+export ShiftedVector
+export lag, lead
+
+include("ShiftedVector.jl")
+include("lag.jl")
+
+end
