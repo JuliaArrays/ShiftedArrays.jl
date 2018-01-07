@@ -5,7 +5,7 @@ using Missings
 export ShiftedVector
 export lag, lead, lazyshift
 
-include("ShiftedVector.jl")
+include("shiftedvector.jl")
 include("lag.jl")
 
 end
