@@ -2,13 +2,11 @@ using WindowFunctions, Missings
 using Base.Test
 
 @testset "ShiftedVector" begin
-    v = [1, 3, 5, 7]
+    v = [1, 3, 5, 4]
     sv = ShiftedVector(v, 1)
     @test length(sv) == 4
     @test sv[2] == 5
     @test Missings.ismissing(sv[4])
-    sv[3] = 4
-    @test v[4] == 4
     diff = v .- sv
     @test diff[1:3] == [-2, -2, 1]
     @test ismissing(diff[4])
@@ -32,6 +30,4 @@ end
     @test diff2[1:2] == [-7, -9]
     @test ismissing(diff2[3]) && ismissing(diff2[4])
 
-    @test all(lazyshift(v, -1)[2:4] .== [1, 3, 8])
-    @test ismissing(lazyshift(v, -1)[1])
 end
