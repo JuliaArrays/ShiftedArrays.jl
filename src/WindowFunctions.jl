@@ -3,9 +3,9 @@ module WindowFunctions
 using Missings
 
 export ShiftedVector
-export lag, lead, lazyshift
+export lag, lead
 
-include("shiftedvector.jl")
+include("shiftedvectors.jl")
 include("lag.jl")
 
 end
