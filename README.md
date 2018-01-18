@@ -26,7 +26,7 @@ julia> s = ShiftedArray(v, 2)
   missing   missing    missing    missing
 ```
 
-The parent Array as well as the amount of shifting can be recovered with `parent` and `index` shift respectively.
+The parent Array as well as the amount of shifting can be recovered with `parent` and `indexshift` respectively.
 
 ```julia
 julia> parent(s)
