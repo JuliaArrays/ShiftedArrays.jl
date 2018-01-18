@@ -2,10 +2,10 @@ module ShiftedArrays
 
 using Missings
 
-export ShiftedVector
+export ShiftedArray, ShiftedVector, indexshift
 export lag, lead
 
-include("shiftedvectors.jl")
+include("shiftedarray.jl")
 include("lag.jl")
 
 end
