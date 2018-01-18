@@ -1,4 +1,4 @@
-using WindowFunctions, Missings
+using ShiftedArrays, Missings
 using Base.Test
 
 @testset "ShiftedVector" begin

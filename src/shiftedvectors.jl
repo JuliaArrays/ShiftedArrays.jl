@@ -12,7 +12,7 @@ into a normal `Vector`.
 julia> v = [1, 3, 5, 4];
 
 julia> s = ShiftedVector(v, 1)
-4-element WindowFunctions.ShiftedVector{Int64,Array{Int64,1}}:
+4-element ShiftedArrays.ShiftedVector{Int64,Array{Int64,1}}:
  3       
  5       
  4       

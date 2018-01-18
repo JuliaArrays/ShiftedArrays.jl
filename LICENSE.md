@@ -1,4 +1,4 @@
-The WindowFunctions.jl package is licensed under the MIT "Expat" License:
+The ShiftedArrays.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2018: Pietro Vertechi.
 >

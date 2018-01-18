@@ -1,4 +1,4 @@
-module WindowFunctions
+module ShiftedArrays
 
 using Missings
 

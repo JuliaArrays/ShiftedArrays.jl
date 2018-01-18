@@ -1,8 +1,8 @@
-# WindowFunctions
+# ShiftedArrays
 
-[![Build Status](https://travis-ci.org/piever/WindowFunctions.jl.svg?branch=master)](https://travis-ci.org/piever/WindowFunctions.jl)
+[![Build Status](https://travis-ci.org/piever/ShiftedArrays.jl.svg?branch=master)](https://travis-ci.org/piever/ShiftedArrays.jl)
 
-[![codecov.io](http://codecov.io/github/piever/WindowFunctions.jl/coverage.svg?branch=master)](http://codecov.io/github/piever/WindowFunctions.jl?branch=master)
+[![codecov.io](http://codecov.io/github/piever/ShiftedArrays.jl/coverage.svg?branch=master)](http://codecov.io/github/piever/ShiftedArrays.jl?branch=master)
 
 Implementation of window functions for data manipulations. A window function is a function that takes as input a vector of `n` elements and return a vector of `n`. This package is an attempt to collect window functions that are useful for data manipulations but have not yet been implemented in Julia.
 
@@ -14,7 +14,7 @@ Two operation are provided for lazily shifting vectors: `lag` and `lead`.
 julia> v = [1, 3, 5, 4];
 
 julia> lag(v)
-4-element WindowFunctions.ShiftedVector{Int64,Array{Int64,1}}:
+4-element ShiftedArrays.ShiftedVector{Int64,Array{Int64,1}}:
   missing
  1       
  3       
@@ -28,7 +28,7 @@ julia> v .- lag(v) # compute difference from previous element without unnecessar
  -1       
 
 julia> s = lag(v, 2) # shift by more than one element
-4-element WindowFunctions.ShiftedVector{Int64,Array{Int64,1}}:
+4-element ShiftedArrays.ShiftedVector{Int64,Array{Int64,1}}:
   missing
   missing
  1       
@@ -52,7 +52,7 @@ julia> copy(s)
 julia> v = [1, 3, 5, 4];
 
 julia> lead(v)
-4-element WindowFunctions.ShiftedVector{Int64,Array{Int64,1}}:
+4-element ShiftedArrays.ShiftedVector{Int64,Array{Int64,1}}:
  3       
  5       
  4       
