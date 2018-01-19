@@ -10,7 +10,7 @@ using Base.Test
     diff = v .- sv
     @test diff[1:3] == [-2, -2, 1]
     @test ismissing(diff[4])
-    @test indexshift(sv) == 1
+    @test shifts(sv) == (1,)
 end
 
 @testset "laglead" begin
