@@ -55,9 +55,9 @@ julia> reduce_vec(mean, ss, 1:2)
 ```
 """
 reduce_vec(f, ss::AbstractArray{<:ShiftedArray}, args...) =
-    mapreduce_vec(g, f, ss, args...)
+    mapreduce_vec(identity, f, ss, args...)
 
-function mapreduce_vec(f, ss::AbstractArray{<:ShiftedArray}, args...)
+function mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedArray}, args...)
     inds = Base.product(args...)
     [f(lazymap(g, skipmissing(s[CartesianIndex(i)] for s in ss))) for i in inds]
 end
