@@ -50,6 +50,8 @@ end
     ss = ShiftedArray.((v,), [1, 3, 6])
     @test reduce(+, ss, -1:2) == [10, 14, 18, 23]
     @test mapreduce(t -> t^2, +, ss, -1:2) == [58, 90, 126, 195]
+    @test isequal(reduce(+, ss, -10:2),
+     [missing, missing, missing, missing, missing, 1, 3, 5, 7, 10, 14, 18, 23])
 end
 
 @testset "reduce_vec" begin
@@ -57,4 +59,6 @@ end
     ss = ShiftedArray.((v,), [1, 3, 6])
     @test reduce_vec(sum, ss, -1:2) == [10, 14, 18, 23]
     @test mapreduce_vec(t -> t^2, sum, ss, -1:2) == [58, 90, 126, 195]
+    @test isequal(reduce_vec(sum, ss, -10:2),
+     [missing, missing, missing, missing, missing, 1, 3, 5, 7, 10, 14, 18, 23])
 end
