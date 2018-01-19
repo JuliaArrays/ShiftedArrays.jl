@@ -1,5 +1,9 @@
-using ShiftedArrays, Missings
+using ShiftedArrays
 using Base.Test
+
+if VERSION<v"0.7.0-DEV"
+    using Missings
+end
 
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
