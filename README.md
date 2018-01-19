@@ -18,7 +18,7 @@ julia> v = reshape(1:16, 4, 4)
  3  7  11  15
  4  8  12  16
 
-julia> s = ShiftedArray(v, 2)
+julia> s = ShiftedArray(v, (2, 0))
 4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
  3         7         11         15       
  4         8         12         16       
@@ -26,7 +26,7 @@ julia> s = ShiftedArray(v, 2)
   missing   missing    missing    missing
 ```
 
-The parent Array as well as the amount of shifting can be recovered with `parent` and `indexshift` respectively.
+The parent Array as well as the amount of shifting can be recovered with `parent` and `shifts` respectively.
 
 ```julia
 julia> parent(s)
@@ -36,8 +36,8 @@ julia> parent(s)
  3  7  11  15
  4  8  12  16
 
-julia> indexshift(s)
-2
+julia> shifts(s)
+(2, 0)
 ```
 
 Use `copy` to collect the shifted data into an `Array`:
@@ -49,6 +49,12 @@ julia> copy(s)
  4         8         12         16       
   missing   missing    missing    missing
   missing   missing    missing    missing
+```
+
+If you only need to shift in one dimension, you can use the commodity method:
+
+```julia
+ShiftedArray(v, n; dim = 1)
 ```
 
 ## Shifting the data
