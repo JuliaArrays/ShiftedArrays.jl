@@ -1,6 +1,9 @@
+__precompile__()
 module ShiftedArrays
 
-using Missings
+if VERSION<v"0.7.0-DEV"
+    using Missings
+end
 
 export ShiftedArray, ShiftedVector, shifts
 export lag, lead

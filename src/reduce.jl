@@ -1,4 +1,4 @@
-lazymap(f, xs) = (f(x) for x in xs)
+_mapreduce(g, op, itr) = isempty(itr) ? missing : mapreduce(g, op, itr)
 
 """
     reduce(op, ss::AbstractArray{<:ShiftedVector}, args...)
@@ -28,8 +28,10 @@ Base.reduce(op, ss::AbstractArray{<:ShiftedArray}, args...) =
 
 function Base.mapreduce(g, op, ss::AbstractArray{<:ShiftedArray}, args...)
     inds = Base.product(args...)
-    [mapreduce(g, op, skipmissing(s[CartesianIndex(i)] for s in ss)) for i in inds]
+    [_mapreduce(g, op, skipmissing(s[CartesianIndex(i)] for s in ss)) for i in inds]
 end
+
+_lazyapply(g, f, itr) = isempty(itr) ? missing : f(g(x) for x in itr)
 
 """
     reduce_vec(f, ss::AbstractArray{<:ShiftedVector}, args...)
@@ -59,5 +61,5 @@ reduce_vec(f, ss::AbstractArray{<:ShiftedArray}, args...) =
 
 function mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedArray}, args...)
     inds = Base.product(args...)
-    [f(lazymap(g, skipmissing(s[CartesianIndex(i)] for s in ss))) for i in inds]
+    [_lazyapply(g, f, skipmissing(s[CartesianIndex(i)] for s in ss)) for i in inds]
 end
