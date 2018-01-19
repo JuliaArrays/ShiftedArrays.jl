@@ -4,8 +4,8 @@ using Base.Test
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = ShiftedVector(v, 1)
-    @test isequal(s, ShiftedVector(v, 1; dim = 1))
-    @test isequal(s, ShiftedVector(v, (1,)))
+    @test isequal(sv, ShiftedVector(v, 1; dim = 1))
+    @test isequal(sv, ShiftedVector(v, (1,)))
     @test length(sv) == 4
     @test sv[2] == 5
     @test ismissing(sv[4])
