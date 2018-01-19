@@ -23,7 +23,12 @@ end
     @test ismissing(sv[3,3])
     @test shifts(sv) == (2,0)
     @test isequal(sv, ShiftedArray(v, 2))
-    @test isequal(ShiftedArray(v, (0,2)), ShiftedArray(v, 2; dim = 2))
+    @test isequal(ShiftedArray(v, (0, 2)), ShiftedArray(v, 2; dim = 2))
+    s = ShiftedArray(v, (0, 2))
+    @test isequal(collect(s), [ 9 13 missing missing;
+                               10 14 missing missing;
+                               11 15 missing missing;
+                               12 16 missing missing])
 end
 
 @testset "laglead" begin

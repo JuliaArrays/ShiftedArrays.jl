@@ -171,4 +171,4 @@ julia> mapreduce_vec(i->i^2, mean, ss, -1:2)
 
 ## Warning
 
-This package uses `Missings` for missing data. `Missings` are known to be inefficient in Julia 0.6 and still have some problems in the development version of Julia 0.7 (see [#25553](https://github.com/JuliaLang/julia/pull/25553)) for a potential fix.
+This package uses `Missings` for missing data. `Missings` are known to be inefficient in Julia 0.6 and still have some problems when used in combination with `map`, `broadcast` or `collect` in the development version of Julia 0.7 (see [#25553](https://github.com/JuliaLang/julia/pull/25553)) for a potential fix).
