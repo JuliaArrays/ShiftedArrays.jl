@@ -68,7 +68,8 @@ Shorthand for `ShiftedArray{T, 1, S}`.
 const ShiftedVector{T, S<:AbstractArray} = ShiftedArray{T, 1, S}
 
 ShiftedVector(v::AbstractVector{T}, n = (0,)) where {T} = ShiftedArray(v, n)
-ShiftedVector(v::AbstractVector{T}, n::Int; dim = 1) = ShiftedArray(v::AbstractArray{T, N}, n::Int; dim = 1)
+ShiftedVector(v::AbstractVector{T}, n::Int; dim = 1)  where {T} =
+    ShiftedArray(v::AbstractArray{T, N}, n::Int; dim = 1)
 
 Base.size(s::ShiftedArray) = Base.size(parent(s))
 
