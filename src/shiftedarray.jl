@@ -1,9 +1,9 @@
 """
-    ShiftedArray(v::AbstractArray, n)
+    ShiftedArray(parent::AbstractArray, shifts)
 
-Custom `AbstractArray` object to store an `AbstractArray` `v` shifted by `n` steps in the
-first indexing dimension.
-For `s::ShiftedArray`, `s.v[i, ...] == v[i + s.n, ...]` if `(i + s.n, ...)` is a valid index for `v`,
+Custom `AbstractArray` object to store an `AbstractArray` `parent` shifted by `shifts` steps (where `shifts` is
+a `Tuple` with one `shift` value per dimension of `parent`).
+For `s::ShiftedArray`, `s.v[i...] == v[map(+, i, s.shifts)...]` if `map(+, i, s.shifts)` is a valid index for `v`,
 and `s.v[i, ...] == missing` otherwise. Use `copy` to collect the values of a `ShiftedArray`
 into a normal `Array`.
 
@@ -12,7 +12,7 @@ into a normal `Array`.
 ```jldoctest shiftedarray
 julia> v = [1, 3, 5, 4];
 
-julia> s = ShiftedArray(v, 1)
+julia> s = ShiftedArray(v, (1,))
 4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
  3
  5
@@ -28,35 +28,39 @@ julia> copy(s)
 ```
 """
 struct ShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{Union{T, Missing}, N}
-    v::S
-    n::Int64
+    parent::S
+    shifts::NTuple{N, Int64}
 end
 
-ShiftedArray(v::AbstractArray{T, N}, n = 0) where {T, N} = ShiftedArray{T, N, typeof(v)}(v, n)
+ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} = ShiftedArray{T, N, typeof(v)}(v, n)
+
+function ShiftedArray(v::AbstractArray{T, N}, n::Int; dim = 1) where {T, N}
+    tup = Tuple(i == dim ? n : 0 for i in 1:N)
+    ShiftedArray(v, tup)
+end
 
 const ShiftedVector{T, S<:AbstractArray} = ShiftedArray{T, 1, S}
 
-ShiftedVector(v::AbstractVector{T}, n = 0) where {T} = ShiftedVector{T, typeof(v)}(v, n)
+ShiftedVector(v::AbstractVector{T}, n = (0,)) where {T} = ShiftedArray(v, n)
 
-Base.size(s::ShiftedArray) = Base.size(s.v)
+Base.size(s::ShiftedArray) = Base.size(parent(s))
 
 function Base.getindex(s::ShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
-    i = first(x) + indexshift(s)
-    l = Base.tail(x)
+    i = map(+, x, shifts(s))
     v = parent(s)
-    if checkbounds(Bool, v, i, l...)
-        @inbounds ret = v[i, l...]
+    if checkbounds(Bool, v, i...)
+        @inbounds ret = v[i...]
     else
         ret = missing
     end
     ret
 end
 
-Base.parent(s::ShiftedArray) = s.v
+Base.parent(s::ShiftedArray) = s.parent
 
 """
-    indexshift(s::ShiftedArray)
+    shifts(s::ShiftedArray)
 
 Returns amount by which `s` is shifted compared to `parent(s)`.
 """
-indexshift(s::ShiftedArray) = s.n
+shifts(s::ShiftedArray) = s.shifts

@@ -1,7 +1,8 @@
 """
-    lag(v::AbstractArray, n = 1)
+    lag(v::AbstractArray, n = 1; dim = 1)
 
-Return a `ShiftedArray` object, with underlying data `v`, shifted by `-n` steps.
+Return a `ShiftedArray` object, with underlying data `v`, shifted by `-n` steps
+along dimension `dim`
 
 # Examples
 
