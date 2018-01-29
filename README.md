@@ -8,7 +8,7 @@ Implementation of shifted arrays.
 
 ## Shifted Arrays
 
-A `ShiftedArray` is a lazy view of an Array, shifted on its first indexing dimension by a constant value `n`.
+A `ShiftedArray` is a lazy view of an Array, shifted on some or all of his first indexing dimension by some constant values.
 
 ```julia
 julia> v = reshape(1:16, 4, 4)
@@ -39,6 +39,8 @@ julia> parent(s)
 julia> shifts(s)
 (2, 0)
 ```
+
+`shifts` returns a `Tuple`, where the n-th element corresponds to the shift on the n-th dimension of the parent `Array`. 
 
 Use `copy` to collect the shifted data into an `Array`:
 
