@@ -42,6 +42,9 @@ end
     diff = v .- sv
     @test diff == [-2, -2, 1, 3]
     @test shifts(sv) == (1,)
+    sv2 = CircShiftedVector(v, -1)
+    diff = v .- sv2
+    @test copy(sv2) == [4, 1, 3, 5]
 end
 
 @testset "CircShiftedArray" begin
