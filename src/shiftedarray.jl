@@ -14,17 +14,26 @@ julia> v = [1, 3, 5, 4];
 
 julia> s = ShiftedArray(v, (1,))
 4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
+  missing
+ 1
  3
  5
- 4
+
+julia> v = [1, 3, 5, 4];
+
+julia> s = ShiftedArray(v, (1,))
+4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
   missing
+ 1
+ 3
+ 5
 
 julia> copy(s)
 4-element Array{Union{Int64, Missings.Missing},1}:
+  missing
+ 1
  3
  5
- 4
-  missing
 ```
 """
 struct ShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{Union{T, Missing}, N}
@@ -46,10 +55,10 @@ julia> v = reshape(1:16, 4, 4);
 
 julia> s = ShiftedArray(v, 2; dim = 1)
 4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
- 3         7         11         15
- 4         8         12         16
   missing   missing    missing    missing
   missing   missing    missing    missing
+ 1         5          9         13
+ 2         6         10         14
 
 julia> shifts(s)
 (2, 0)
