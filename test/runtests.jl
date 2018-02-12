@@ -31,6 +31,37 @@ end
                                12 16 missing missing])
 end
 
+@testset "CircShiftedVector" begin
+    v = [1, 3, 5, 4]
+    sv = CircShiftedVector(v, 1)
+    @test isequal(sv, CircShiftedVector(v, 1; dim = 1))
+    @test isequal(sv, CircShiftedVector(v, (1,)))
+    @test length(sv) == 4
+    @test sv[2] == 5
+    @test sv[4] == 1
+    diff = v .- sv
+    @test diff == [-2, -2, 1, 3]
+    @test shifts(sv) == (1,)
+    sv2 = CircShiftedVector(v, -1)
+    diff = v .- sv2
+    @test copy(sv2) == [4, 1, 3, 5]
+end
+
+@testset "CircShiftedArray" begin
+    v = reshape(1:16, 4, 4)
+    sv = CircShiftedArray(v, (2, 0))
+    @test length(sv) == 16
+    @test sv[1, 3] == 11
+    @test shifts(sv) == (2,0)
+    @test isequal(sv, CircShiftedArray(v, 2))
+    @test isequal(CircShiftedArray(v, (0, 2)), CircShiftedArray(v, 2; dim = 2))
+    s = CircShiftedArray(v, (0, 2))
+    @test isequal(collect(s), [ 9 13 1 5;
+                               10 14 2 6;
+                               11 15 3 7;
+                               12 16 4 8])
+end
+
 @testset "laglead" begin
     v = [1, 3, 8, 12]
     diff = v .- lag(v)
