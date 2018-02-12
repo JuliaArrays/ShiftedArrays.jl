@@ -74,7 +74,7 @@ ShiftedVector(v::AbstractVector{T}, n::Int; dim = 1)  where {T} =
 Base.size(s::ShiftedArray) = Base.size(parent(s))
 
 function Base.getindex(s::ShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
-    i = map(+, x, shifts(s))
+    i = map(-, x, shifts(s))
     v = parent(s)
     if checkbounds(Bool, v, i...)
         @inbounds ret = v[i...]

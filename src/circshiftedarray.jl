@@ -88,7 +88,7 @@ end
 function get_circshifted_index(ind, shift, range)
     a, b = extrema(range)
     n = length(range)
-    _shifted_between(ind+shift, a, b, n)
+    _shifted_between(ind-shift, a, b, n)
 end
 
 function Base.getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}

@@ -36,7 +36,7 @@ julia> copy(s)
  5
 ```
 """
-lag(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, -n; dim = dim)
+lag(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, n; dim = dim)
 
 """
     lead(v::AbstractArray, n = 1; dim = 1)
@@ -75,4 +75,4 @@ julia> copy(s)
   missing
 ```
 """
-lead(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, n; dim = dim)
+lead(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, -n; dim = dim)
