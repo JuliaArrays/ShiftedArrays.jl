@@ -3,9 +3,6 @@
 
 Custom `AbstractArray` object to store an `AbstractArray` `parent` circularly shifted by `shifts` steps (where `shifts` is
 a `Tuple` with one `shift` value per dimension of `parent`).
-For `s::CircShiftedArray`, `s[i...] == s.parent[map(+, i, s.shifts)...]` if `map(+, i, s.shifts)`
-is a valid index for `s.parent`, the corresponding index with the same remainder modulo the size
-on that dimension otherwise.
 Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
 
 # Examples

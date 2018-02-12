@@ -1,9 +1,10 @@
 if !isfile(joinpath(@__DIR__, "already_showed"))
     print_with_color(Base.info_color(), STDERR,
     """
-    PkgBenchmark has been completely rewritten. Please see https://github.com/JuliaCI/PkgBenchmark.jl/
-    for updated documentation and examples. Code written for previous versions of PkgBenchmark is
-    unlikely to still work.
+    The shift index convention has changed to be in agreement with Julia's function
+    `circshift`. Now a positive shift shits to the right, i.e. `ShiftedVector(v, 1)[2] == v[2-1] == v[1]`.
+    Similarly `copy(CircShiftedVector(v, 1)) == circshift(v, 1)`.
+    For more details see https://github.com/piever/ShiftedArrays.jl
     """)
     touch("already_showed")
 end

@@ -18,12 +18,12 @@ julia> v = reshape(1:16, 4, 4)
  3  7  11  15
  4  8  12  16
 
-julia> s = ShiftedArray(v, (2, 0))
-4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
- 3         7         11         15       
- 4         8         12         16       
-  missing   missing    missing    missing
-  missing   missing    missing    missing
+ julia> s = ShiftedArray(v, (2, 0))
+ 4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
+   missing   missing    missing    missing
+   missing   missing    missing    missing
+  1         5          9         13       
+  2         6         10         14  
 ```
 
 The parent Array as well as the amount of shifting can be recovered with `parent` and `shifts` respectively.
@@ -40,17 +40,17 @@ julia> shifts(s)
 (2, 0)
 ```
 
-`shifts` returns a `Tuple`, where the n-th element corresponds to the shift on the n-th dimension of the parent `Array`. 
+`shifts` returns a `Tuple`, where the n-th element corresponds to the shift on the n-th dimension of the parent `Array`.
 
 Use `copy` to collect the shifted data into an `Array`:
 
 ```julia
 julia> copy(s)
 4×4 Array{Union{Int64, Missings.Missing},2}:
- 3         7         11         15       
- 4         8         12         16       
   missing   missing    missing    missing
   missing   missing    missing    missing
+ 1         5          9         13       
+ 2         6         10         14   
 ```
 
 If you only need to shift in one dimension, you can use the commodity method:
@@ -120,7 +120,7 @@ times = [2, 7, 9]
 Then we should first compute the list of `ShiftedArrays`:
 
 ```julia
-julia> ss = ShiftedArray.((data,), times)
+julia> ss = ShiftedArray.((data,), .-times) # You need to subtract the index to center around times
 3-element Array{ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}},1}:
  Union{Int64, Missings.Missing}[5, 6, 7, 9, 16, 2, 3, 4, 7, missing, missing]                                         
  Union{Int64, Missings.Missing}[2, 3, 4, 7, missing, missing, missing, missing, missing, missing, missing]            

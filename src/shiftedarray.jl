@@ -3,7 +3,7 @@
 
 Custom `AbstractArray` object to store an `AbstractArray` `parent` shifted by `shifts` steps (where `shifts` is
 a `Tuple` with one `shift` value per dimension of `parent`).
-For `s::ShiftedArray`, `s[i...] == s.parent[map(+, i, s.shifts)...]` if `map(+, i, s.shifts)`
+For `s::ShiftedArray`, `s[i...] == s.parent[map(-, i, s.shifts)...]` if `map(-, i, s.shifts)`
 is a valid index for `s.parent`, and `s.v[i, ...] == missing` otherwise.
 Use `copy` to collect the values of a `ShiftedArray` into a normal `Array`.
 
