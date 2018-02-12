@@ -3,7 +3,7 @@
 
 Custom `AbstractArray` object to store an `AbstractArray` `parent` shifted by `shifts` steps (where `shifts` is
 a `Tuple` with one `shift` value per dimension of `parent`).
-For `s::ShiftedArray`, `s[i...] == s.parent[map(+, i, s.shifts)...]` if `map(+, i, s.shifts)`
+For `s::ShiftedArray`, `s[i...] == s.parent[map(-, i, s.shifts)...]` if `map(-, i, s.shifts)`
 is a valid index for `s.parent`, and `s.v[i, ...] == missing` otherwise.
 Use `copy` to collect the values of a `ShiftedArray` into a normal `Array`.
 
@@ -14,17 +14,26 @@ julia> v = [1, 3, 5, 4];
 
 julia> s = ShiftedArray(v, (1,))
 4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
+  missing
+ 1
  3
  5
- 4
+
+julia> v = [1, 3, 5, 4];
+
+julia> s = ShiftedArray(v, (1,))
+4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
   missing
+ 1
+ 3
+ 5
 
 julia> copy(s)
 4-element Array{Union{Int64, Missings.Missing},1}:
+  missing
+ 1
  3
  5
- 4
-  missing
 ```
 """
 struct ShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{Union{T, Missing}, N}
@@ -46,10 +55,10 @@ julia> v = reshape(1:16, 4, 4);
 
 julia> s = ShiftedArray(v, 2; dim = 1)
 4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
- 3         7         11         15
- 4         8         12         16
   missing   missing    missing    missing
   missing   missing    missing    missing
+ 1         5          9         13
+ 2         6         10         14
 
 julia> shifts(s)
 (2, 0)
@@ -74,7 +83,7 @@ ShiftedVector(v::AbstractVector{T}, n::Int; dim = 1)  where {T} =
 Base.size(s::ShiftedArray) = Base.size(parent(s))
 
 function Base.getindex(s::ShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
-    i = map(+, x, shifts(s))
+    i = map(-, x, shifts(s))
     v = parent(s)
     if checkbounds(Bool, v, i...)
         @inbounds ret = v[i...]

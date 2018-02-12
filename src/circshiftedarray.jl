@@ -3,9 +3,6 @@
 
 Custom `AbstractArray` object to store an `AbstractArray` `parent` circularly shifted by `shifts` steps (where `shifts` is
 a `Tuple` with one `shift` value per dimension of `parent`).
-For `s::CircShiftedArray`, `s[i...] == s.parent[map(+, i, s.shifts)...]` if `map(+, i, s.shifts)`
-is a valid index for `s.parent`, the corresponding index with the same remainder modulo the size
-on that dimension otherwise.
 Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
 
 # Examples
@@ -15,17 +12,17 @@ julia> v = [1, 3, 5, 4];
 
 julia> s = CircShiftedArray(v, (1,))
 4-element ShiftedArrays.CircShiftedArray{Int64,1,Array{Int64,1}}:
- 3
- 5
  4
  1
+ 3
+ 5
 
 julia> copy(s)
 4-element Array{Int64,1}:
- 3
- 5
  4
  1
+ 3
+ 5
 ```
 """
 struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
@@ -88,7 +85,7 @@ end
 function get_circshifted_index(ind, shift, range)
     a, b = extrema(range)
     n = length(range)
-    _shifted_between(ind+shift, a, b, n)
+    _shifted_between(ind-shift, a, b, n)
 end
 
 function Base.getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
