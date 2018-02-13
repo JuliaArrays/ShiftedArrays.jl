@@ -4,7 +4,7 @@ using Compat.Test
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = ShiftedVector(v, -1)
-    @test isequal(sv, ShiftedVector(v, -1; dim = 1))
+    @test isequal(sv, ShiftedVector(v, -1))
     @test isequal(sv, ShiftedVector(v, (-1,)))
     @test length(sv) == 4
     @test sv[2] == 5
@@ -23,7 +23,7 @@ end
     @test ismissing(sv[3,3])
     @test shifts(sv) == (-2,0)
     @test isequal(sv, ShiftedArray(v, -2))
-    @test isequal(ShiftedArray(v, (0, 2)), ShiftedArray(v, 2; dim = 2))
+    @test isequal(ShiftedArray(v, (2,)), ShiftedArray(v, 2))
     s = ShiftedArray(v, (0, -2))
     @test isequal(collect(s), [ 9 13 missing missing;
                                10 14 missing missing;
@@ -34,7 +34,7 @@ end
 @testset "CircShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = CircShiftedVector(v, -1)
-    @test isequal(sv, CircShiftedVector(v, -1; dim = 1))
+    @test isequal(sv, CircShiftedVector(v, -1))
     @test isequal(sv, CircShiftedVector(v, (-1,)))
     @test length(sv) == 4
     @test sv[2] == 5
@@ -55,7 +55,7 @@ end
     @test sv[1, 3] == 11
     @test shifts(sv) == (-2,0)
     @test isequal(sv, CircShiftedArray(v, -2))
-    @test isequal(CircShiftedArray(v, (0, 2)), CircShiftedArray(v, 2; dim = 2))
+    @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
     s = CircShiftedArray(v, (0, 2))
     @test isequal(collect(s), [ 9 13 1 5;
                                10 14 2 6;
@@ -66,7 +66,8 @@ end
 @testset "circshift" begin
     v = reshape(1:16, 4, 4)
     @test all(circshift(v, (1, -1)) .== ShiftedArrays.circshift(v, (1, -1)))
-    @test all(circshift(v, (0, -1)) .== ShiftedArrays.circshift(v, -1, dim = 2))
+    @test all(circshift(v, (1,)) .== ShiftedArrays.circshift(v, (1,)))
+    @test all(circshift(v, 3) .== ShiftedArrays.circshift(v, 3))
 end
 
 @testset "laglead" begin
