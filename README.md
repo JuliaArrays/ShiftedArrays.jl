@@ -53,10 +53,15 @@ julia> copy(s)
  2         6         10         14   
 ```
 
-If you only need to shift in one dimension, you can use the commodity method:
+If you pass an integer, it will shift in the first dimension:
 
 ```julia
-ShiftedArray(v, n; dim = 1)
+julia> ShiftedArray(v, 1)
+4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
+  missing   missing    missing    missing
+ 1         5          9         13
+ 2         6         10         14
+ 3         7         11         15
 ```
 
 ## Shifting the data
