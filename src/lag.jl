@@ -1,8 +1,10 @@
 """
-    lag(v::AbstractArray, n = 1; dim = 1)
+    lag(v::AbstractArray, n = 1; kwargs...)
 
-Return a `ShiftedArray` object, with underlying data `v`, shifted by `n` steps
-along dimension `dim`
+Return a `ShiftedArray` object, with underlying data `v`, shifted by `n` steps.
+`n` can be an integer, in wich case use the keyword `dims` (defaulting to `1`) to specify on which
+dimension to shit.
+`n` can also be a `Tuple` denoting the shift in each dimension.
 
 # Examples
 
@@ -36,12 +38,15 @@ julia> copy(s)
  5
 ```
 """
-lag(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, n; dim = dim)
+lag(v::AbstractArray, n = 1; kwargs...) = ShiftedArray(v, n; kwargs...)
 
 """
-    lead(v::AbstractArray, n = 1; dim = 1)
+    lead(v::AbstractArray, n = 1; kwargs...)
 
 Return a `ShiftedArray` object, with underlying data `v`, shifted by `-n` steps.
+`n` can be an integer, in wich case use the keyword `dims` (defaulting to `1`) to specify on which
+dimension to shit.
+`n` can also be a `Tuple` denoting the shift in each dimension.
 
 # Examples
 
@@ -75,4 +80,4 @@ julia> copy(s)
   missing
 ```
 """
-lead(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, -n; dim = dim)
+lead(v::AbstractArray, n = 1; kwargs...) = ShiftedArray(v, map(-, n); kwargs...)

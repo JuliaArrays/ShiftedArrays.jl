@@ -56,7 +56,7 @@ julia> copy(s)
 If you only need to shift in one dimension, you can use the commodity method:
 
 ```julia
-ShiftedArray(v, n; dim = 1)
+ShiftedArray(v, n; dims = 1)
 ```
 
 ## Shifting the data
