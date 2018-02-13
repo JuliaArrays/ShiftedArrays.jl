@@ -41,7 +41,7 @@ struct ShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{Union{T, Missing}, 
     shifts::NTuple{N, Int}
 end
 
-ShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N)) where {T, N} =
+ShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N); kwargs...) where {T, N} =
     ShiftedArray{T, N, typeof(v)}(v, n)
 
 """
@@ -90,9 +90,7 @@ Shorthand for `ShiftedArray{T, 1, S}`.
 """
 const ShiftedVector{T, S<:AbstractArray} = ShiftedArray{T, 1, S}
 
-ShiftedVector(v::AbstractVector{T}, n = (0,)) where {T} = ShiftedArray(v, n)
-ShiftedVector(v::AbstractVector{T}, n::Int; dims = 1)  where {T} =
-    ShiftedArray(v, n::Int; dims = 1)
+ShiftedVector(v::AbstractVector, n = (0,); kwargs...) = ShiftedArray(v, n; kwargs...)
 
 Base.size(s::ShiftedArray) = Base.size(parent(s))
 

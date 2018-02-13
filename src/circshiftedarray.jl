@@ -30,7 +30,7 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     shifts::NTuple{N, Int}
 end
 
-CircShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N)) where {T, N} =
+CircShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N); kwargs...) where {T, N} =
     CircShiftedArray{T, N, typeof(v)}(v, n)
 
 """
@@ -70,9 +70,7 @@ Shorthand for `CircShiftedArray{T, 1, S}`.
 """
 const CircShiftedVector{T, S<:AbstractArray} = CircShiftedArray{T, 1, S}
 
-CircShiftedVector(v::AbstractVector{T}, n = (0,)) where {T} = CircShiftedArray(v, n)
-CircShiftedVector(v::AbstractVector{T}, n::Int; dims = 1)  where {T} =
-    CircShiftedArray(v, n::Int; dims = 1)
+CircShiftedVector(v::AbstractVector, n = (0,); kwargs...) = CircShiftedArray(v, n; kwargs...)
 
 Base.size(s::CircShiftedArray) = Base.size(parent(s))
 
