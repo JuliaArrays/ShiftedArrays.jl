@@ -48,3 +48,5 @@ julia> ShiftedArrays.circshift(w, (1, -1))
 ```
 """
 circshift(v::AbstractArray{T, N}, n::NTuple{N, Int}) where {T, N} = CircShiftedArray(v, n)
+
+circshift(v::AbstractArray{T, N}, n; dims = (1,)) where {T, N} = CircShiftedArray(v, n; dims = dims)

@@ -27,10 +27,11 @@ julia> copy(s)
 """
 struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::S
-    shifts::NTuple{N, Int64}
+    shifts::NTuple{N, Int}
 end
 
-CircShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} = CircShiftedArray{T, N, typeof(v)}(v, n)
+CircShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N)) where {T, N} =
+    CircShiftedArray{T, N, typeof(v)}(v, n)
 
 """
     CircShiftedArray(parent::AbstractArray, n::Int; dims = 1)
@@ -56,6 +57,10 @@ julia> shifts(s)
 function CircShiftedArray(v::AbstractArray{T, N}, n::Int; dims = 1) where {T, N}
     tup = Tuple(i == dims ? n : 0 for i in 1:N)
     CircShiftedArray(v, tup)
+end
+
+function CircShiftedArray(v::AbstractArray{T, N}, n; dims = (1,)) where {T, N}
+    CircShiftedArray(v, _expand_tuple(n, dims, N))
 end
 
 """

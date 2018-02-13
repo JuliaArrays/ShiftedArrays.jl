@@ -38,10 +38,11 @@ julia> copy(s)
 """
 struct ShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{Union{T, Missing}, N}
     parent::S
-    shifts::NTuple{N, Int64}
+    shifts::NTuple{N, Int}
 end
 
-ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} = ShiftedArray{T, N, typeof(v)}(v, n)
+ShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N)) where {T, N} =
+    ShiftedArray{T, N, typeof(v)}(v, n)
 
 """
     ShiftedArray(parent::AbstractArray, n::Int; dims = 1)
@@ -68,6 +69,19 @@ function ShiftedArray(v::AbstractArray{T, N}, n::Int; dims = 1) where {T, N}
     tup = Tuple(i == dims ? n : 0 for i in 1:N)
     ShiftedArray(v, tup)
 end
+
+function _expand_tuple(shifts::NTuple{N, Int}, inds::NTuple{N, Int}, n) where N
+    v = fill(0, n)
+    for (ind, shift) in zip(inds, shifts)
+        v[ind] = shift
+    end
+    Tuple(v)
+end
+
+function ShiftedArray(v::AbstractArray{T, N}, n; dims = (1,)) where {T, N}
+    ShiftedArray(v, _expand_tuple(n, dims, N))
+end
+
 
 """
     ShiftedVector{T, S<:AbstractArray}

@@ -36,7 +36,12 @@ julia> copy(s)
  5
 ```
 """
-lag(v::AbstractArray, n = 1; dims = 1) = ShiftedArray(v, n; dims = dims)
+lag(v::AbstractArray, n::Int = 1; dims = 1) = ShiftedArray(v, n; dims = dims)
+
+lag(v::AbstractArray{T, N}, n::NTuple{N, Int}) where {T, N} =
+    ShiftedArray(v, n)
+
+lag(v::AbstractArray, n; dims = (1,)) = ShiftedArray(v, n; dims = dims)
 
 """
     lead(v::AbstractArray, n = 1; dims = 1)
@@ -75,4 +80,9 @@ julia> copy(s)
   missing
 ```
 """
-lead(v::AbstractArray, n = 1; dims = 1) = ShiftedArray(v, -n; dims = dims)
+lead(v::AbstractArray, n::Int = 1; dims = 1) = ShiftedArray(v, -n; dims = dims)
+
+lead(v::AbstractArray{T, N}, n::NTuple{N, Int}) where {T, N} =
+    ShiftedArray(v, map(-, n))
+
+lead(v::AbstractArray, n; dims = (1,)) = ShiftedArray(v, map(-, n); dims = dims)

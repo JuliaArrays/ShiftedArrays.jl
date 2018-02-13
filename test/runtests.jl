@@ -67,6 +67,8 @@ end
     v = reshape(1:16, 4, 4)
     @test all(circshift(v, (1, -1)) .== ShiftedArrays.circshift(v, (1, -1)))
     @test all(circshift(v, (0, -1)) .== ShiftedArrays.circshift(v, -1, dims = 2))
+    @test ShiftedArrays.circshift(v, (0, 1)) == ShiftedArrays.circshift(v, (1,), dims = (2,)) ==
+        ShiftedArrays.circshift(v, 1, dims = 2)
 end
 
 @testset "laglead" begin
@@ -74,6 +76,10 @@ end
     diff = v .- lag(v)
     @test diff[2:4] == [2, 5, 4]
     @test ismissing(diff[1])
+    @test isequal(lag(v), lag(v, (1,)))
+    w = reshape(1:16, 4, 4)
+    @test isequal(lag(w, 1, dims = 2), lag(w, (1,), dims = (2,)))
+    @test isequal(lag(w, 1, dims = 2), lag(w, (0, 1,)))
 
     diff2 = v .- lag(v, 2)
     @test diff2[3:4] == [7, 9]
@@ -82,6 +88,10 @@ end
     diff = v .- lead(v)
     @test diff[1:3] == [-2, -5, -4]
     @test ismissing(diff[4])
+    @test isequal(lead(v), lead(v, (1,)))
+    w = reshape(1:16, 4, 4)
+    @test isequal(lead(w, 1, dims = 2), lead(w, (1,), dims = (2,)))
+    @test isequal(lead(w, 1, dims = 2), lead(w, (0, 1,)))
 
     diff2 = v .- lead(v, 2)
     @test diff2[1:2] == [-7, -9]
