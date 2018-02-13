@@ -48,7 +48,7 @@ julia> s = lag(v, (0, 2))
 lag(v::AbstractArray, n = 1) = ShiftedArray(v, n)
 
 """
-    lead(v::AbstractArray, n = 1; dim = 1)
+    lead(v::AbstractArray, n = 1)
 
 Return a `ShiftedArray` object, with underlying data `v`. The second argument gives the amount
 to shift negatively in each dimension. If it is an integer, it is assumed to refer
