@@ -63,6 +63,12 @@ end
                                12 16 4 8])
 end
 
+@testset "circshift" begin
+    v = reshape(1:16, 4, 4)
+    @test all(circshift(v, (1, -1)) .== ShiftedArrays.circshift(v, (1, -1)))
+    @test all(circshift(v, (0, -1)) .== ShiftedArrays.circshift(v, -1, dim = 2))
+end
+
 @testset "laglead" begin
     v = [1, 3, 8, 12]
     diff = v .- lag(v)

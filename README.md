@@ -8,7 +8,7 @@ Implementation of shifted arrays.
 
 ## Shifted Arrays
 
-A `ShiftedArray` is a lazy view of an Array, shifted on some or all of his first indexing dimension by some constant values.
+A `ShiftedArray` is a lazy view of an Array, shifted on some or all of his indexing dimensions by some constant values.
 
 ```julia
 julia> v = reshape(1:16, 4, 4)
@@ -99,6 +99,37 @@ julia> lead(v)
  5       
  4       
   missing
+```
+
+## Shifting the data circularly
+
+Julia Base provides a function `circshift` to shift the data circularly. However this function
+creates a copy of the vector, which may be unnecessary if the rotated vector is to be used only once.
+This package provides the `CircShiftedArray` type, which is a lazy view of an array
+shifted on some or all of his indexing dimensions by some constant values.
+
+Our implementation of `circshift` relies on them to avoid copying:
+
+```julia
+julia> w = reshape(1:16, 4, 4);
+
+julia> s = ShiftedArrays.circshift(w, (1, -1))
+4×4 ShiftedArrays.CircShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
+ 8  12  16  4
+ 5   9  13  1
+ 6  10  14  2
+ 7  11  15  3
+```
+
+As usual, you can `copy` the result to have a normal `Array`:
+
+```julia
+julia> copy(s)
+4×4 Array{Int64,2}:
+ 8  12  16  4
+ 5   9  13  1
+ 6  10  14  2
+ 7  11  15  3
 ```
 
 ## Reducing your data

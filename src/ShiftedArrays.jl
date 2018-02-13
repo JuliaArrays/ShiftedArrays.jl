@@ -13,6 +13,7 @@ export reduce_vec, mapreduce_vec
 include("shiftedarray.jl")
 include("circshiftedarray.jl")
 include("lag.jl")
+include("circshift.jl")
 include("reduce.jl")
 
 end
