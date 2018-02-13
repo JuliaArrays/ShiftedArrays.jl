@@ -90,13 +90,13 @@ end
 
 function Base.getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
     v = parent(s)
-    i = map(get_circshifted_index, x, shifts(s), indices(v))
+    i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
     v[i...]
 end
 
 function Base.setindex!(s::CircShiftedArray{T, N, S}, el, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
     v = parent(s)
-    i = map(get_circshifted_index, x, shifts(s), indices(v))
+    i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
     v[i...] = el
 end
 

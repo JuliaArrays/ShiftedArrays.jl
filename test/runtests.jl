@@ -1,5 +1,5 @@
-using ShiftedArrays, Missings
-using Base.Test
+using ShiftedArrays, Missings, Compat
+using Compat.Test
 
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]

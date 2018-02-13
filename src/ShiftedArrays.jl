@@ -5,6 +5,8 @@ if VERSION<v"0.7.0-DEV"
     using Missings
 end
 
+using Compat
+
 export ShiftedArray, ShiftedVector, shifts
 export CircShiftedArray, CircShiftedVector
 export lag, lead
