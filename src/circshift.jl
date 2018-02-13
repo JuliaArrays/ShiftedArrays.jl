@@ -1,8 +1,8 @@
 """
-    circshift(v::AbstractArray, n::Int = 1; dim = 1)
+    circshift(v::AbstractArray, n::Int = 1; dims = 1)
 
 Return a `ShiftedArray` object, with underlying data `v`, circularly shifted by `n` steps
-along dimension `dim`
+along dimension `dims`
 
 # Examples
 
@@ -18,7 +18,7 @@ julia> ShiftedArrays.circshift(v)
 
 julia> w = reshape(1:16, 4, 4);
 
-julia> ShiftedArrays.circshift(w, -1, dim = 2)
+julia> ShiftedArrays.circshift(w, -1, dims = 2)
 4×4 ShiftedArrays.CircShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
  5   9  13  1
  6  10  14  2
@@ -26,7 +26,7 @@ julia> ShiftedArrays.circshift(w, -1, dim = 2)
  8  12  16  4
 ```
 """
-circshift(v::AbstractArray, n::Int = 1; dim = 1) = CircShiftedArray(v, n; dim = dim)
+circshift(v::AbstractArray, n::Int = 1; dims = 1) = CircShiftedArray(v, n; dims = dims)
 
 """
     circshift(v::AbstractArray{T, N}, n::NTuple{N, Int}) where {T, N}

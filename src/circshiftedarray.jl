@@ -33,16 +33,16 @@ end
 CircShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} = CircShiftedArray{T, N, typeof(v)}(v, n)
 
 """
-    CircShiftedArray(parent::AbstractArray, n::Int; dim = 1)
+    CircShiftedArray(parent::AbstractArray, n::Int; dims = 1)
 
-Auxiliary method to create a `CircShiftedArray` shifted of `n` steps on dimension `dim`.
+Auxiliary method to create a `CircShiftedArray` shifted of `n` steps on dimension `dims`.
 
 # Examples
 
 ```jldoctest circshiftedarray
 julia> v = reshape(1:16, 4, 4);
 
-julia> s = CircShiftedArray(v, 2; dim = 1)
+julia> s = CircShiftedArray(v, 2; dims = 1)
 4×4 ShiftedArrays.CircShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
  3  7  11  15
  4  8  12  16
@@ -53,8 +53,8 @@ julia> shifts(s)
 (2, 0)
 ```
 """
-function CircShiftedArray(v::AbstractArray{T, N}, n::Int; dim = 1) where {T, N}
-    tup = Tuple(i == dim ? n : 0 for i in 1:N)
+function CircShiftedArray(v::AbstractArray{T, N}, n::Int; dims = 1) where {T, N}
+    tup = Tuple(i == dims ? n : 0 for i in 1:N)
     CircShiftedArray(v, tup)
 end
 
@@ -66,8 +66,8 @@ Shorthand for `CircShiftedArray{T, 1, S}`.
 const CircShiftedVector{T, S<:AbstractArray} = CircShiftedArray{T, 1, S}
 
 CircShiftedVector(v::AbstractVector{T}, n = (0,)) where {T} = CircShiftedArray(v, n)
-CircShiftedVector(v::AbstractVector{T}, n::Int; dim = 1)  where {T} =
-    CircShiftedArray(v, n::Int; dim = 1)
+CircShiftedVector(v::AbstractVector{T}, n::Int; dims = 1)  where {T} =
+    CircShiftedArray(v, n::Int; dims = 1)
 
 Base.size(s::CircShiftedArray) = Base.size(parent(s))
 

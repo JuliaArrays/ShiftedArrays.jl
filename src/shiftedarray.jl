@@ -44,16 +44,16 @@ end
 ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} = ShiftedArray{T, N, typeof(v)}(v, n)
 
 """
-    ShiftedArray(parent::AbstractArray, n::Int; dim = 1)
+    ShiftedArray(parent::AbstractArray, n::Int; dims = 1)
 
-Auxiliary method to create a `ShiftedArray` shifted of `n` steps on dimension `dim`.
+Auxiliary method to create a `ShiftedArray` shifted of `n` steps on dimension `dims`.
 
 # Examples
 
 ```jldoctest shiftedarray
 julia> v = reshape(1:16, 4, 4);
 
-julia> s = ShiftedArray(v, 2; dim = 1)
+julia> s = ShiftedArray(v, 2; dims = 1)
 4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
   missing   missing    missing    missing
   missing   missing    missing    missing
@@ -64,8 +64,8 @@ julia> shifts(s)
 (2, 0)
 ```
 """
-function ShiftedArray(v::AbstractArray{T, N}, n::Int; dim = 1) where {T, N}
-    tup = Tuple(i == dim ? n : 0 for i in 1:N)
+function ShiftedArray(v::AbstractArray{T, N}, n::Int; dims = 1) where {T, N}
+    tup = Tuple(i == dims ? n : 0 for i in 1:N)
     ShiftedArray(v, tup)
 end
 
@@ -77,8 +77,8 @@ Shorthand for `ShiftedArray{T, 1, S}`.
 const ShiftedVector{T, S<:AbstractArray} = ShiftedArray{T, 1, S}
 
 ShiftedVector(v::AbstractVector{T}, n = (0,)) where {T} = ShiftedArray(v, n)
-ShiftedVector(v::AbstractVector{T}, n::Int; dim = 1)  where {T} =
-    ShiftedArray(v, n::Int; dim = 1)
+ShiftedVector(v::AbstractVector{T}, n::Int; dims = 1)  where {T} =
+    ShiftedArray(v, n::Int; dims = 1)
 
 Base.size(s::ShiftedArray) = Base.size(parent(s))
 
