@@ -1,8 +1,8 @@
 """
-    lag(v::AbstractArray, n = 1; dim = 1)
+    lag(v::AbstractArray, n = 1)
 
-Return a `ShiftedArray` object, with underlying data `v`, shifted by `n` steps
-along dimension `dim`
+Return a `ShiftedArray` object, with underlying data `v`. The second argument gives the amount
+to shift in each dimension. If it is an integer, it is assumed to refer to the first dimension.
 
 # Examples
 
@@ -34,14 +34,26 @@ julia> copy(s)
  1
  3
  5
+
+julia> v = reshape(1:16, 4, 4);
+
+julia> s = lag(v, (0, 2))
+4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
+ missing  missing  1  5
+ missing  missing  2  6
+ missing  missing  3  7
+ missing  missing  4  8
 ```
 """
-lag(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, n; dim = dim)
+lag(v::AbstractArray, n = 1) = ShiftedArray(v, n)
 
 """
-    lead(v::AbstractArray, n = 1; dim = 1)
+    lead(v::AbstractArray, n = 1)
 
-Return a `ShiftedArray` object, with underlying data `v`, shifted by `-n` steps.
+Return a `ShiftedArray` object, with underlying data `v`. The second argument gives the amount
+to shift negatively in each dimension. If it is an integer, it is assumed to refer
+to the first dimension.
+
 
 # Examples
 
@@ -73,6 +85,15 @@ julia> copy(s)
  9
   missing
   missing
+
+julia> v = reshape(1:16, 4, 4);
+
+julia> s = lag(v, (0, 2))
+4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
+ missing  missing  1  5
+ missing  missing  2  6
+ missing  missing  3  7
+ missing  missing  4  8
 ```
 """
-lead(v::AbstractArray, n = 1; dim = 1) = ShiftedArray(v, -n; dim = dim)
+lead(v::AbstractArray, n = 1) = ShiftedArray(v, map(-, n))

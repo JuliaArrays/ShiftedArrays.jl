@@ -4,14 +4,12 @@ using Compat.Test
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = ShiftedVector(v, -1)
-    @test isequal(sv, ShiftedVector(v, -1; dim = 1))
     @test isequal(sv, ShiftedVector(v, (-1,)))
     @test length(sv) == 4
-    @test sv[2] == 5
+    @test all(sv[1:3] .== [3, 5, 4])
     @test ismissing(sv[4])
     diff = v .- sv
-    @test diff[1:3] == [-2, -2, 1]
-    @test ismissing(diff[4])
+    @test isequal(diff, [-2, -2, 1, missing])
     @test shifts(sv) == (-1,)
 end
 
@@ -23,7 +21,7 @@ end
     @test ismissing(sv[3,3])
     @test shifts(sv) == (-2,0)
     @test isequal(sv, ShiftedArray(v, -2))
-    @test isequal(ShiftedArray(v, (0, 2)), ShiftedArray(v, 2; dim = 2))
+    @test isequal(ShiftedArray(v, (2,)), ShiftedArray(v, 2))
     s = ShiftedArray(v, (0, -2))
     @test isequal(collect(s), [ 9 13 missing missing;
                                10 14 missing missing;
@@ -34,11 +32,9 @@ end
 @testset "CircShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = CircShiftedVector(v, -1)
-    @test isequal(sv, CircShiftedVector(v, -1; dim = 1))
     @test isequal(sv, CircShiftedVector(v, (-1,)))
     @test length(sv) == 4
-    @test sv[2] == 5
-    @test sv[4] == 1
+    @test all(sv .== [3, 5, 4, 1])
     diff = v .- sv
     @test diff == [-2, -2, 1, 3]
     @test shifts(sv) == (-1,)
@@ -46,6 +42,9 @@ end
     diff = v .- sv2
     @test copy(sv2) == [4, 1, 3, 5]
     @test all(CircShiftedVector(v, 1) .== circshift(v,1))
+    sv[2] = 0
+    @test collect(sv) == [3, 0, 4, 1]
+    @test v == [1, 3, 0, 4]
 end
 
 @testset "CircShiftedArray" begin
@@ -55,7 +54,7 @@ end
     @test sv[1, 3] == 11
     @test shifts(sv) == (-2,0)
     @test isequal(sv, CircShiftedArray(v, -2))
-    @test isequal(CircShiftedArray(v, (0, 2)), CircShiftedArray(v, 2; dim = 2))
+    @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
     s = CircShiftedArray(v, (0, 2))
     @test isequal(collect(s), [ 9 13 1 5;
                                10 14 2 6;
@@ -66,26 +65,23 @@ end
 @testset "circshift" begin
     v = reshape(1:16, 4, 4)
     @test all(circshift(v, (1, -1)) .== ShiftedArrays.circshift(v, (1, -1)))
-    @test all(circshift(v, (0, -1)) .== ShiftedArrays.circshift(v, -1, dim = 2))
+    @test all(circshift(v, (1,)) .== ShiftedArrays.circshift(v, (1,)))
+    @test all(circshift(v, 3) .== ShiftedArrays.circshift(v, 3))
 end
 
 @testset "laglead" begin
     v = [1, 3, 8, 12]
     diff = v .- lag(v)
-    @test diff[2:4] == [2, 5, 4]
-    @test ismissing(diff[1])
+    @test isequal(diff, [missing, 2, 5, 4])
 
     diff2 = v .- lag(v, 2)
-    @test diff2[3:4] == [7, 9]
-    @test ismissing(diff2[1]) && ismissing(diff2[2])
+    @test isequal(diff2, [missing, missing, 7, 9])
 
     diff = v .- lead(v)
-    @test diff[1:3] == [-2, -5, -4]
-    @test ismissing(diff[4])
+    @test isequal(diff, [-2, -5, -4, missing])
 
     diff2 = v .- lead(v, 2)
-    @test diff2[1:2] == [-7, -9]
-    @test ismissing(diff2[3]) && ismissing(diff2[4])
+    @test isequal(diff2, [-7, -9, missing, missing])
 end
 
 @testset "reduce" begin
