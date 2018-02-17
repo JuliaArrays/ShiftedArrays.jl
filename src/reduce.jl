@@ -13,7 +13,7 @@ function. Indices for which the iterable is empty will return `missing`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}},1}:
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
  Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
  Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
 
@@ -51,7 +51,7 @@ function. Indices for which the iterable is empty will return `missing`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}},1}:
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
  Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
  Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
 
@@ -93,7 +93,7 @@ iterable is empty will return `missing`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}},1}:
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
  Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
  Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
 
@@ -131,7 +131,7 @@ iterable is empty will return `missing`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}},1}:
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
  Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
  Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
 
