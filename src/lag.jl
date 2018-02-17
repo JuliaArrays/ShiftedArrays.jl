@@ -88,12 +88,12 @@ julia> copy(s)
 
 julia> v = reshape(1:16, 4, 4);
 
-julia> s = lag(v, (0, 2))
+julia> s = lead(v, (0, 2))
 4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
- missing  missing  1  5
- missing  missing  2  6
- missing  missing  3  7
- missing  missing  4  8
+  9  13  missing  missing
+ 10  14  missing  missing
+ 11  15  missing  missing
+ 12  16  missing  missing
 ```
 """
 lead(v::AbstractArray, n = 1) = ShiftedArray(v, map(-, n))
