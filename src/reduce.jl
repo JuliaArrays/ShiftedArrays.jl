@@ -1,6 +1,6 @@
-lazyapply(g, f, itr) = f(g(x) for x in itr)
+mapreduce_vec(g, f, itr) = f(g(x) for x in itr)
 
-for (_func, func) in [(:_mapreduce, :mapreduce), (:_lazyapply, :lazyapply)]
+for (_func, func) in [(:_mapreduce, :mapreduce), (:_mapreduce_vec, :mapreduce_vec)]
     @eval begin
         function ($_func)(g, op, itr; default = missing, filter = t->true, dropmissing = true)
             nm_itr = dropmissing ? skipmissing(itr) : itr
@@ -162,5 +162,5 @@ julia> mapreduce_vec(log, mean, ss, -5:2)
 """
 function mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...)
     inds = Base.product(args...)
-    [_lazyapply(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
+    [_mapreduce_vec(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
 end
