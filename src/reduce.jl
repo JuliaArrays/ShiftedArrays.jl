@@ -162,6 +162,5 @@ julia> mapreduce_vec(log, mean, ss, -5:2)
 """
 function mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...)
     inds = Base.product(args...)
-    [_lazyapply(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...)
-        for i in inds]
+    [_lazyapply(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
 end
