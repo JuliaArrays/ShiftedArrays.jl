@@ -1,5 +1,6 @@
-_padded_tuple(n, N) = Tuple(i <= length(n) ? n[i] : 0 for i in 1:N)
-_padded_tuple(n::Int, N) = _padded_tuple((n,), N)
+_padded_tuple(v::AbstractArray{T, N}, n::NTuple{N, Int}) where {T, N} = n
+_padded_tuple(v::AbstractArray{T, N}, n::Int) where {T, N} = _padded_tuple(v, (n,))
+_padded_tuple(v::AbstractArray{T, N}, n) where {T, N} = Tuple(i <= length(n) ? n[i] : 0 for i in 1:N)
 
 """
     ShiftedArray(parent::AbstractArray, shifts, default)
@@ -9,6 +10,7 @@ a `Tuple` with one `shift` value per dimension of `parent`).
 For `s::ShiftedArray`, `s[i...] == s.parent[map(-, i, s.shifts)...]` if `map(-, i, s.shifts)`
 is a valid index for `s.parent`, and `s.v[i, ...] == default` otherwise.
 Use `copy` to collect the values of a `ShiftedArray` into a normal `Array`.
+The recommended constructor is `ShiftedArray(parent, shifts; default = missing)`
 
 # Examples
 
@@ -57,11 +59,8 @@ struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
     default::M
 end
 
-ShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N), d::M = missing) where {T, M, N} =
-    ShiftedArray{T, M, N, typeof(v)}(v, n, d)
-
-ShiftedArray(v::AbstractArray{T, N}, n, d = missing) where {T, N} =
-    ShiftedArray(v, _padded_tuple(n, N), d)
+ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N); default::M = missing) where {T, N, M} =
+     ShiftedArray{T, M, N, typeof(v)}(v, _padded_tuple(v, n), default)
 
 """
     ShiftedVector{T, S<:AbstractArray}
@@ -70,7 +69,7 @@ Shorthand for `ShiftedArray{T, 1, S}`.
 """
 const ShiftedVector{T, M, S<:AbstractArray} = ShiftedArray{T, M, 1, S}
 
-ShiftedVector(v::AbstractVector, n = (0,), d = missing) = ShiftedArray(v, n, d)
+ShiftedVector(v::AbstractVector, n = (0,); default = missing) = ShiftedArray(v, n; default = default)
 
 Base.size(s::ShiftedArray) = Base.size(parent(s))
 

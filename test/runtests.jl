@@ -11,7 +11,7 @@ using Compat.Test
     diff = v .- sv
     @test isequal(diff, [-2, -2, 1, missing])
     @test shifts(sv) == (-1,)
-    svneg = ShiftedVector(v, -1, -100)
+    svneg = ShiftedVector(v, -1, default = -100)
     @test default(svneg) == -100
     @test copy(svneg) == coalesce.(sv, -100)
 end
@@ -30,7 +30,7 @@ end
                                10 14 missing missing;
                                11 15 missing missing;
                                12 16 missing missing])
-    sneg = ShiftedArray(v, (0, -2), -100)
+    sneg = ShiftedArray(v, (0, -2), default = -100)
     @test all(sneg .== coalesce.(s, default(sneg)))
 end
 
@@ -82,7 +82,7 @@ end
     diff2 = v .- lag(v, 2)
     @test isequal(diff2, [missing, missing, 7, 9])
 
-    @test all(lag(v, 2, -100) .== coalesce.(lag(v, 2), -100))
+    @test all(lag(v, 2, default = -100) .== coalesce.(lag(v, 2), -100))
 
     diff = v .- lead(v)
     @test isequal(diff, [-2, -5, -4, missing])
@@ -90,7 +90,7 @@ end
     diff2 = v .- lead(v, 2)
     @test isequal(diff2, [-7, -9, missing, missing])
 
-    @test all(lead(v, 2, -100) .== coalesce.(lead(v, 2), -100))
+    @test all(lead(v, 2, default = -100) .== coalesce.(lead(v, 2), -100))
 end
 
 @testset "reduce" begin
