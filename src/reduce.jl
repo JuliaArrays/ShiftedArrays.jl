@@ -32,8 +32,7 @@ julia> reduce(+, ss, -5:2)
  16
 ```
 """
-Base.reduce(op, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...) =
-    mapreduce(identity, op, ss, args...; kwargs...)
+function reduce end
 
 
 """
@@ -70,10 +69,7 @@ julia> mapreduce(t -> t^2, +, ss, -5:2)
  130
 ```
 """
-function Base.mapreduce(g, op, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...)
-    inds = Base.product(args...)
-    [_mapreduce(g, op, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
-end
+function mapreduce end
 
 """
     reduce_vec(f, ss::AbstractArray{<:ShiftedVector}, args...; default = missing, filter = t->true, dropmissing = true)
@@ -110,8 +106,7 @@ julia> reduce_vec(mean, ss, -5:2)
  8.0
 ```
 """
-reduce_vec(f, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...) =
-    mapreduce_vec(identity, f, ss, args...; kwargs...)
+function reduce_vec end
 
 """
     mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedVector}, args...; default = missing, filter = t->true, dropmissing = true)
@@ -148,19 +143,27 @@ julia> mapreduce_vec(log, mean, ss, -5:2)
  2.07157
 ```
 """
-function mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...)
-    inds = Base.product(args...)
-    [_mapreduce_vec(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
-end
+function mapreduce_vec end
 
 mapreduce_vec(g, f, itr) = f(g(x) for x in itr)
 
-for (_func, func) in [(:_mapreduce, :mapreduce), (:_mapreduce_vec, :mapreduce_vec)]
+for (_mapreduce, mapreduce, reduce) in [(:_mapreduce, :mapreduce, :reduce), (:_mapreduce_vec, :mapreduce_vec, :reduce_vec)]
     @eval begin
-        function ($_func)(g, op, itr; default = missing, filter = t->true, dropmissing = true)
-            nm_itr = dropmissing ? skipmissing(itr) : itr
-            filtered = Iterators.filter(filter, nm_itr)
-            isempty(filtered) ? default : ($func)(g, op, filtered)
+        # auxiliary method to filter away missings and return a default if no values are found
+        function ($_mapreduce)(g, op, itr; default = missing, filter = t->true, dropmissing = true)
+            missingfree_itr = dropmissing ? skipmissing(itr) : itr
+            filtered_itr = Iterators.filter(filter, missingfree_itr)
+            isempty(filtered_itr) ? default : ($mapreduce)(g, op, filtered_itr)
         end
+
+        # align the shifted arrays and apply _mapreduce
+        function ($mapreduce)(g, f, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...)
+            inds = Base.product(args...)
+            [($_mapreduce)(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
+        end
+
+        # define corresponding reduce methods
+        ($reduce)(op, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...) =
+            ($mapreduce)(identity, op, ss, args...; kwargs...)
     end
 end

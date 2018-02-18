@@ -5,6 +5,7 @@ using Missings
 
 using Compat
 
+import Base: reduce, mapreduce
 export ShiftedArray, ShiftedVector, shifts, default
 export CircShiftedArray, CircShiftedVector
 export lag, lead
