@@ -1,9 +1,7 @@
 __precompile__()
 module ShiftedArrays
 
-if VERSION<v"0.7.0-DEV"
-    using Missings
-end
+using Missings
 
 using Compat
 

@@ -1,11 +1,21 @@
-_mapreduce(g, op, itr) = isempty(itr) ? missing : mapreduce(g, op, itr)
+lazyapply(g, f, itr) = f(g(x) for x in itr)
+
+for (_func, func) in [(:_mapreduce, :mapreduce), (:_lazyapply, :lazyapply)]
+    @eval begin
+        function ($_func)(g, op, itr; default = missing, filter = t->true, dropmissing = true)
+            nm_itr = dropmissing ? skipmissing(itr) : itr
+            filtered = Iterators.filter(filter, nm_itr)
+            isempty(filtered) ? default : ($func)(g, op, filtered)
+        end
+    end
+end
 
 """
-    reduce(op, ss::AbstractArray{<:ShiftedVector}, args...)
+    reduce(op, ss::AbstractArray{<:ShiftedVector}, args...; default = missing, filter = t->true, dropmissing = true)
 
 Align all vectors in `ss`. For each of the indices in `args`, extract the collection of
 elements corresponding to that index and reduce using `op`. `op` can be any binary reduction
-function. Indices for which the iterable is empty will return `missing`.
+function. Indices for which the iterable is empty will return `default`.
 
 # Examples
 
@@ -34,16 +44,16 @@ julia> reduce(+, ss, -5:2)
  16
 ```
 """
-Base.reduce(op, ss::AbstractArray{<:ShiftedArray}, args...) =
-    mapreduce(identity, op, ss, args...)
+Base.reduce(op, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...) =
+    mapreduce(identity, op, ss, args...; kwargs...)
 
 
 """
-    mapreduce(g, op, ss::AbstractArray{<:ShiftedVector}, args...)
+    mapreduce(g, op, ss::AbstractArray{<:ShiftedVector}, args...; default = missing, filter = t->true, dropmissing = true)
 
 Align all vectors in `ss`. For each of the indices in `args`, extract the collection of
 elements corresponding to that index, apply `g` and reduce using `op`. `op` can be any binary reduction
-function. Indices for which the iterable is empty will return `missing`.
+function. Indices for which the iterable is empty will return `default`.
 
 # Examples
 
@@ -72,20 +82,18 @@ julia> mapreduce(t -> t^2, +, ss, -5:2)
  130
 ```
 """
-function Base.mapreduce(g, op, ss::AbstractArray{<:ShiftedArray}, args...)
+function Base.mapreduce(g, op, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...)
     inds = Base.product(args...)
-    [_mapreduce(g, op, skipmissing(s[CartesianIndex(i)] for s in ss)) for i in inds]
+    [_mapreduce(g, op, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
 end
 
-_lazyapply(g, f, itr) = isempty(itr) ? missing : f(g(x) for x in itr)
-
 """
-    reduce_vec(f, ss::AbstractArray{<:ShiftedVector}, args...)
+    reduce_vec(f, ss::AbstractArray{<:ShiftedVector}, args...; default = missing, filter = t->true, dropmissing = true)
 
 Align all vectors in `ss`. For each of the indices in `args`, extract the collection of
 elements corresponding to that index and reduce using `f`. `f` is any function that
 takes an iterable as input and outputs a scalar, such as `mean`. Indices for which the
-iterable is empty will return `missing`.
+iterable is empty will return `default`.
 
 # Examples
 
@@ -114,16 +122,16 @@ julia> reduce_vec(mean, ss, -5:2)
  8.0
 ```
 """
-reduce_vec(f, ss::AbstractArray{<:ShiftedArray}, args...) =
-    mapreduce_vec(identity, f, ss, args...)
+reduce_vec(f, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...) =
+    mapreduce_vec(identity, f, ss, args...; kwargs...)
 
 """
-    mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedVector}, args...)
+    mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedVector}, args...; default = missing, filter = t->true, dropmissing = true)
 
 Align all vectors in `ss`. For each of the indices in `args`, extract the collection of
 elements corresponding to that index, apply `g` and reduce using `f`. `f` is any function that
 takes an iterable as input and outputs a scalar, such as `mean`. Indices for which the
-iterable is empty will return `missing`.
+iterable is empty will return `default`.
 
 # Examples
 
@@ -152,7 +160,8 @@ julia> mapreduce_vec(log, mean, ss, -5:2)
  2.07157
 ```
 """
-function mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedArray}, args...)
+function mapreduce_vec(g, f, ss::AbstractArray{<:ShiftedArray}, args...; kwargs...)
     inds = Base.product(args...)
-    [_lazyapply(g, f, skipmissing(s[CartesianIndex(i)] for s in ss)) for i in inds]
+    [_lazyapply(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...)
+        for i in inds]
 end
