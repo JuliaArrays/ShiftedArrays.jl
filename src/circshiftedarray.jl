@@ -30,11 +30,8 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     shifts::NTuple{N, Int64}
 end
 
-CircShiftedArray(v::AbstractArray{T, N}, n::NTuple{N, Int} = Tuple(0 for i in 1:N)) where {T, N} =
-    CircShiftedArray{T, N, typeof(v)}(v, n)
-
-CircShiftedArray(v::AbstractArray{T, N}, n) where {T, N} =
-    CircShiftedArray(v, _padded_tuple(n, N))
+CircShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} =
+    CircShiftedArray{T, N, typeof(v)}(v, _padded_tuple(v, n))
 
 """
     CircShiftedVector{T, S<:AbstractArray}

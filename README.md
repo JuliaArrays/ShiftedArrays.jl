@@ -64,6 +64,16 @@ julia> ShiftedArray(v, 1)
  3         7         11         15
 ```
 
+A custom default value (other than `missing`) can be provided with the `default` keyword:
+
+```julia
+julia> ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)
+3-element ShiftedArrays.ShiftedArray{Float64,Float64,1,Array{Float64,1}}:
+ NaN
+   1.2
+   3.1
+```
+
 ## Shifting the data
 
 Using the `ShiftedArray` type, this package provides two operations for lazily shifting vectors: `lag` and `lead`.
@@ -205,6 +215,14 @@ julia> mapreduce_vec(i->i^2, mean, ss, -1:2)
  91.3333
  15.0   
  31.3333
+```
+
+### Filtering
+
+To exclude some of the data before reducing it (`missing` is excluded by default, but maybe you want to filter for `isfinite` or `!isnan`) use the `filter` keyword:
+
+```julia
+mapreduce_vec(f, g, s, range, filter = isfinite)
 ```
 
 ## Warning
