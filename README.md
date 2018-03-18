@@ -75,6 +75,21 @@ julia> ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)
    3.1
 ```
 
+### Out of bound indexes
+
+The bound check is performed only on the parent `Array`, not on the `ShiftedArray`, so for example:
+
+```julia
+julia> ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)[-2:3]
+6-element Array{Float64,1}:
+ NaN
+ NaN
+ NaN
+ NaN
+   1.2
+   3.1
+```
+
 ## Shifting the data
 
 Using the `ShiftedArray` type, this package provides two operations for lazily shifting vectors: `lag` and `lead`.

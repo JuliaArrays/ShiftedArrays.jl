@@ -99,3 +99,5 @@ shifts(s::ShiftedArray) = s.shifts
 Returns default value.
 """
 default(s::ShiftedArray) = s.default
+
+Base.checkbounds(::ShiftedArray, I...) = nothing
