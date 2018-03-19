@@ -241,6 +241,24 @@ To exclude some of the data before reducing it (`missing` is excluded by default
 mapreduce_vec(f, g, s, range, filter = isfinite)
 ```
 
+## Collecting a vector of ShiftedArrays into an (Offset)Array
+
+To collect a `Vector` of `ShiftedArrays` into a normal `Array`, simply:
+
+```julia
+convert(Array, s, inds...)
+```
+
+where you need as many `inds` as the dimensions of your `ShiftedArrays`. The output `Array` first few dimensions will be indexed by `inds` (though starting from `1`) and the last one will correspond to the index of the `ShiftedArray` within the `Array` of `ShiftedArrays`.
+
+Similarly, to collect a `Vector` of `ShiftedArrays` into an `OffseyArray` (if you want to preserve the `inds` as offset indices), simply:
+
+```julia
+convert(OffsetArray, s, inds...)
+```
+
+The output `OffsetArray` first few dimensions will be indexed by `inds` and the last one will correspond to the index of the `ShiftedArray` within the `Array` of `ShiftedArrays`.
+
 ## Warning
 
 This package uses `Missings` for missing data. `Missings` are known to be inefficient in Julia 0.6 and still have some problems when used in combination with `map`, `broadcast` or `collect` in the development version of Julia 0.7 (see [#25553](https://github.com/JuliaLang/julia/pull/25553) for a potential fix).
