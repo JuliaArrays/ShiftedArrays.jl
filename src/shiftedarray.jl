@@ -59,6 +59,8 @@ struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
     default::M
 end
 
+const ShiftedAbstractArray{T, N} = ShiftedArray{T, <:Any, N, <:Any}
+
 ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N); default::M = missing) where {T, N, M} =
      ShiftedArray{T, M, N, typeof(v)}(v, _padded_tuple(v, n), default)
 

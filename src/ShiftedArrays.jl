@@ -2,7 +2,7 @@ __precompile__()
 module ShiftedArrays
 
 using Missings
-
+using RecursiveArrayTools, OffsetArrays
 using Compat
 
 import Base: reduce, mapreduce
@@ -16,5 +16,6 @@ include("circshiftedarray.jl")
 include("lag.jl")
 include("circshift.jl")
 include("reduce.jl")
+include("offset.jl")
 
 end

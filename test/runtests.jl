@@ -1,4 +1,4 @@
-using ShiftedArrays, Missings, Compat
+using ShiftedArrays, Missings, Compat, OffsetArrays
 using Compat.Test
 
 @testset "ShiftedVector" begin
@@ -110,4 +110,11 @@ end
     @test mapreduce_vec(t -> t^2, sum, ss, -1:2) == [58, 90, 126, 195]
     @test isequal(reduce_vec(sum, ss, -10:2),
      [missing, missing, missing, missing, missing, 1, 3, 5, 7, 10, 14, 18, 23])
+end
+
+@testset "offset" begin
+    v = [1, 3, 5, 6, 7, 8, 9, 11]
+    ss = ShiftedArray.((v,), [-1, -3, -6])
+    @test isequal(convert(Array, ss, -1:2), [missing 3 7; 1 5 8; 3 6 9; 5 7 11])
+    @test isequal(convert(OffsetArray, ss, -1:2), OffsetArray([missing 3 7; 1 5 8; 3 6 9; 5 7 11], -1:2, 1:3))
 end
