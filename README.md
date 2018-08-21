@@ -246,7 +246,7 @@ mapreduce_vec(f, g, s, range, filter = isfinite)
 To collect a `Vector` of `ShiftedArrays` into a normal `Array`, simply:
 
 ```julia
-convert(Array, s, inds...)
+ShiftedArray.convert(Array, s, inds...)
 ```
 
 where you need as many `inds` as the dimensions of your `ShiftedArrays`. The output `Array` first few dimensions will be indexed by `inds` (though starting from `1`) and the last one will correspond to the index of the `ShiftedArray` within the `Array` of `ShiftedArrays`.
@@ -254,7 +254,7 @@ where you need as many `inds` as the dimensions of your `ShiftedArrays`. The out
 Similarly, to collect a `Vector` of `ShiftedArrays` into an `OffseyArray` (if you want to preserve the `inds` as offset indices), simply:
 
 ```julia
-convert(OffsetArray, s, inds...)
+ShiftedArray.convert(OffsetArray, s, inds...)
 ```
 
 The output `OffsetArray` first few dimensions will be indexed by `inds` and the last one will correspond to the index of the `ShiftedArray` within the `Array` of `ShiftedArrays`.
