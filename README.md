@@ -246,7 +246,7 @@ mapreduce_vec(f, g, s, range, filter = isfinite)
 To collect a `Vector` of `ShiftedArrays` into a normal `Array`, simply:
 
 ```julia
-ShiftedArray.convert(Array, s, inds...)
+ShiftedArray.to_array(s, inds...)
 ```
 
 where you need as many `inds` as the dimensions of your `ShiftedArrays`. The output `Array` first few dimensions will be indexed by `inds` (though starting from `1`) and the last one will correspond to the index of the `ShiftedArray` within the `Array` of `ShiftedArrays`.
@@ -254,11 +254,11 @@ where you need as many `inds` as the dimensions of your `ShiftedArrays`. The out
 Similarly, to collect a `Vector` of `ShiftedArrays` into an `OffseyArray` (if you want to preserve the `inds` as offset indices), simply:
 
 ```julia
-ShiftedArray.convert(OffsetArray, s, inds...)
+ShiftedArray.to_offsetarray(s, inds...)
 ```
 
 The output `OffsetArray` first few dimensions will be indexed by `inds` and the last one will correspond to the index of the `ShiftedArray` within the `Array` of `ShiftedArrays`.
 
 ## Warning
 
-This package uses `Missings` for missing data. `Missings` are known to be inefficient in Julia 0.6 and still have some problems when used in combination with `map`, `broadcast` or `collect` in the development version of Julia 0.7 (see [#25553](https://github.com/JuliaLang/julia/pull/25553) for a potential fix).
+This package uses `Missings` for missing data. `Missings` are known to be inefficient in Julia 0.6, but should work better in Julia 1.0.

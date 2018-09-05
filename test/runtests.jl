@@ -115,6 +115,6 @@ end
 @testset "offset" begin
     v = [1, 3, 5, 6, 7, 8, 9, 11]
     ss = ShiftedArray.((v,), [-1, -3, -6])
-    @test isequal(ShiftedArrays.convert(Array, ss, -1:2), [missing 3 7; 1 5 8; 3 6 9; 5 7 11])
-    @test isequal(ShiftedArrays.convert(OffsetArray, ss, -1:2), OffsetArray([missing 3 7; 1 5 8; 3 6 9; 5 7 11], -1:2, 1:3))
+    @test isequal(ShiftedArrays.to_array(ss, -1:2), [missing 3 7; 1 5 8; 3 6 9; 5 7 11])
+    @test isequal(ShiftedArrays.to_offsetarray(ss, -1:2), OffsetArray([missing 3 7; 1 5 8; 3 6 9; 5 7 11], -1:2, 1:3))
 end
