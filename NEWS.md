@@ -2,7 +2,7 @@
 
 ### Breaking changes
 
-- Now conversion of `AbstractArray{<:ShiftedArray}` to `Array` or `OffsetArray` is done via `ShiftedArray.convert` rather than `Base.convert` to avoid type piracy.
+- Now conversion of `AbstractArray{<:ShiftedArray}` to `Array` or `OffsetArray` is done via `ShiftedArray.to_array` and `ShiftedArray.to_offsetarray` respectively rather than `Base.convert` to avoid type piracy.
 
 
 ## ShiftedArrays 0.3.1 release notes
