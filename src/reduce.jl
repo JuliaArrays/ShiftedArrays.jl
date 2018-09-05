@@ -157,13 +157,13 @@ for (_mapreduce, mapreduce, reduce) in [(:_mapreduce, :mapreduce, :reduce), (:_m
         end
 
         # align the shifted arrays and apply _mapreduce
-        function ($mapreduce)(g, f, ss::AbstractArray{<:ShiftedAbstractArray{<:Any, N}}, args::Vararg{<:AbstractArray, N}; kwargs...) where{N}
+        function ($mapreduce)(g, f, ss::AbstractArray{<:ShiftedArray{<:Any, <:Any, N}}, args::Vararg{<:AbstractArray, N}; kwargs...) where{N}
             inds = Base.product(args...)
             [($_mapreduce)(g, f, (s[CartesianIndex(i)] for s in ss); kwargs...) for i in inds]
         end
 
         # define corresponding reduce methods
-        ($reduce)(op, ss::AbstractArray{<:ShiftedAbstractArray{<:Any, N}}, args::Vararg{<:AbstractArray, N}; kwargs...) where{N} =
+        ($reduce)(op, ss::AbstractArray{<:ShiftedArray{<:Any, <:Any, N}}, args::Vararg{<:AbstractArray, N}; kwargs...) where{N} =
             ($mapreduce)(identity, op, ss, args...; kwargs...)
     end
 end
