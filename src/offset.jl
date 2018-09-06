@@ -19,5 +19,5 @@ and the last one will correspond to the index of the inner `AbstractArray` withi
 """
 function to_offsetarray(ss::AbstractArray{<:AbstractArray{<:Any, N}}, I::Vararg{<:AbstractArray, N}) where N
     m = to_array(ss, I...)
-    OffsetArray(m, I..., last(Compat.axes(m)))
+    OffsetArray(m, I..., last(axes(m)))
 end

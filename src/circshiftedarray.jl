@@ -29,7 +29,7 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::S
     shifts::NTuple{N, Int64}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
-        @assert all(step(x) == 1 for x in Compat.axes(p))
+        @assert all(step(x) == 1 for x in axes(p))
         new{T, N, typeof(p)}(p, _padded_tuple(p, n))
     end
 end
@@ -68,7 +68,7 @@ end
     if checkbounds(Bool, v, ind...)
         @inbounds ret = v[ind...]
     else
-        i = bringwithin(ind, Compat.axes(v))
+        i = bringwithin(ind, axes(v))
         @inbounds ret = v[i...]
     end
     ret
@@ -80,7 +80,7 @@ end
     if checkbounds(Bool, v, ind...)
         @inbounds v[ind...] = el
     else
-        i = map(bringwithin, ind, Compat.axes(v))
+        i = map(bringwithin, ind, axes(v))
         @inbounds v[i...] = el
     end
 end
