@@ -45,7 +45,7 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
 
-function bringwithin(ind, range)
+@inline function bringwithin(ind, range)
     a, b = extrema(range)
     n = length(range)
     while ind < a
@@ -59,7 +59,7 @@ end
 
 @inline function getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
     v = parent(s)
-    ind = map(-, x, shifts(s))
+    ind = OffsetArrays.offset(shifts(s), x)
     if checkbounds(Bool, v, ind...)
         @inbounds res = v[ind...]
     else
