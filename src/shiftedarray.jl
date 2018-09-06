@@ -56,10 +56,9 @@ julia> shifts(s)
 struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
     parent::OffsetArray{T, N, S}
     default::M
+    ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N); default::M = missing)  where {T, M, N} =
+        new{T, M, N, typeof(v)}(OffsetArray(v, _padded_tuple(v, n)), default)
 end
-
-ShiftedArray(v::AbstractArray, n = Tuple(0 for i in 1:N); default = missing) =
-     ShiftedArray(OffsetArray(v, _padded_tuple(v, n)), default)
 
 """
     ShiftedVector{T, S<:AbstractArray}

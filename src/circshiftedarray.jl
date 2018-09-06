@@ -26,11 +26,10 @@ julia> copy(s)
 ```
 """
 struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
-    parent::S
-    shifts::NTuple{N, Int}
+    parent::OffsetArray{T, N, S}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
         @assert all(step(x) == 1 for x in axes(p))
-        new{T, N, typeof(p)}(p, _padded_tuple(p, n))
+        new{T, N, S}(OffsetArray(p, _padded_tuple(p, n)))
     end
 end
 
@@ -63,12 +62,11 @@ end
 @inline bringwithin(idxs::Tuple{}, ranges::Tuple{}) = ()
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
-    v = parent(s)
-    ind = OffsetArrays.offset(shifts(s), x)
+    v = s.parent
     if checkbounds(Bool, v, ind...)
-        @inbounds ret = v[ind...]
+        @inbounds ret = v[x...]
     else
-        i = bringwithin(ind, axes(v))
+        i = bringwithin(x, axes(v))
         @inbounds ret = v[i...]
     end
     ret
@@ -85,14 +83,14 @@ end
     end
 end
 
-parent(s::CircShiftedArray) = s.parent
+parent(s::CircShiftedArray) = parent(s.parent)
 
 """
     shifts(s::CircShiftedArray)
 
 Returns amount by which `s` is shifted compared to `parent(s)`.
 """
-shifts(s::CircShiftedArray) = s.shifts
+shifts(s::CircShiftedArray) = s.parent.offsets
 
 checkbounds(::CircShiftedArray, I...) = nothing
 checkbounds(::Type{Bool}, ::CircShiftedArray, I...) = true
