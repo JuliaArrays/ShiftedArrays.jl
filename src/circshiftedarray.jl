@@ -43,10 +43,9 @@ const CircShiftedVector{T, S<:AbstractArray} = CircShiftedArray{T, 1, S}
 
 CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
-Base.size(s::CircShiftedArray) = Base.size(parent(s))
+size(s::CircShiftedArray) = size(parent(s))
 
-
-function get_circshifted_index(ind, shift, range)
+function bringwithin(ind, range)
     a, b = extrema(range)
     n = length(range)
     while ind < a
@@ -58,25 +57,25 @@ function get_circshifted_index(ind, shift, range)
     ind
 end
 
-function Base.getindex(s::CircShiftedArray{T, 1, S}, x::Int) where {T, S<:AbstractArray}
+function getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
     v = parent(s)
-    i = get_circshifted_index(x, shifts(s), Compat.axes(v)[1])
-    v[i...]
+    ind = map(-, x, shifts(s))
+    if checkbounds(Bool, v, ind...)
+        @inbounds res = v[ind...]
+    else
+        i = map(bringwithin, ind, Compat.axes(v))
+        @inbounds res = v[i...]
+    end
+    res
 end
 
-# function Base.getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
-#     v = parent(s)
-#     i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
-#     v[i...]
-# end
-
-function Base.setindex!(s::CircShiftedArray{T, N, S}, el, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
+function setindex!(s::CircShiftedArray{T, N, S}, el, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
     v = parent(s)
     i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
     v[i...] = el
 end
 
-Base.parent(s::CircShiftedArray) = s.parent
+parent(s::CircShiftedArray) = s.parent
 
 """
     shifts(s::CircShiftedArray)
@@ -85,4 +84,4 @@ Returns amount by which `s` is shifted compared to `parent(s)`.
 """
 shifts(s::CircShiftedArray) = s.shifts
 
-Base.checkbounds(::CircShiftedArray, I...) = nothing
+checkbounds(::CircShiftedArray, I...) = nothing

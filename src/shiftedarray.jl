@@ -71,9 +71,9 @@ const ShiftedVector{T, M, S<:AbstractArray} = ShiftedArray{T, M, 1, S}
 
 ShiftedVector(v::AbstractVector, n = (0,); default = missing) = ShiftedArray(v, n; default = default)
 
-Base.size(s::ShiftedArray) = Base.size(parent(s))
+size(s::ShiftedArray) = size(parent(s))
 
-function Base.getindex(s::ShiftedArray{T, M, N, S}, x::Vararg{Int, N}) where {T, M, N, S<:AbstractArray}
+function getindex(s::ShiftedArray{T, M, N, S}, x::Vararg{Int, N}) where {T, M, N, S<:AbstractArray}
     i = map(-, x, shifts(s))
     v = parent(s)
     if checkbounds(Bool, v, i...)
@@ -84,7 +84,7 @@ function Base.getindex(s::ShiftedArray{T, M, N, S}, x::Vararg{Int, N}) where {T,
     ret
 end
 
-Base.parent(s::ShiftedArray) = s.parent
+parent(s::ShiftedArray) = s.parent
 
 """
     shifts(s::ShiftedArray)
@@ -100,4 +100,4 @@ Returns default value.
 """
 default(s::ShiftedArray) = s.default
 
-Base.checkbounds(::ShiftedArray, I...) = nothing
+checkbounds(::ShiftedArray, I...) = nothing
