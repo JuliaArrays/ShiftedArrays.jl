@@ -63,7 +63,7 @@ end
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
     v = s.parent
-    if checkbounds(Bool, v, ind...)
+    if checkbounds(Bool, v, x...)
         @inbounds ret = v[x...]
     else
         i = bringwithin(x, axes(v))
@@ -73,12 +73,11 @@ end
 end
 
 @inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
-    v = parent(s)
-    ind = OffsetArrays.offset(shifts(s), x)
-    if checkbounds(Bool, v, ind...)
-        @inbounds v[ind...] = el
+    v = s.parent
+    if checkbounds(Bool, v, x...)
+        @inbounds v[x...] = el
     else
-        i = map(bringwithin, ind, axes(v))
+        i = bringwithin(x, axes(v))
         @inbounds v[i...] = el
     end
 end
