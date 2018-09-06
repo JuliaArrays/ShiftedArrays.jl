@@ -5,7 +5,7 @@ using Missings
 using RecursiveArrayTools, OffsetArrays
 using Compat
 
-import Base: reduce, mapreduce
+import Base: reduce, mapreduce, checkbounds, getindex, setindex!, parent, size
 export ShiftedArray, ShiftedVector, shifts, default
 export CircShiftedArray, CircShiftedVector
 export lag, lead

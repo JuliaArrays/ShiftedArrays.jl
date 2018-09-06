@@ -28,10 +28,11 @@ julia> copy(s)
 struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::S
     shifts::NTuple{N, Int64}
+    function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
+        @assert all(step(x) == 1 for x in Compat.axes(p))
+        new{T, N, typeof(p)}(p, _padded_tuple(p, n))
+    end
 end
-
-CircShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} =
-    CircShiftedArray{T, N, typeof(v)}(v, _padded_tuple(v, n))
 
 """
     CircShiftedVector{T, S<:AbstractArray}
@@ -42,38 +43,49 @@ const CircShiftedVector{T, S<:AbstractArray} = CircShiftedArray{T, 1, S}
 
 CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
-Base.size(s::CircShiftedArray) = Base.size(parent(s))
+size(s::CircShiftedArray) = size(parent(s))
 
+@inline function bringwithin(idx::Int, range::AbstractRange)
+    a, b = extrema(range)
+    n = length(range)
+    while idx < a
+        idx += n
+    end
+    while idx > b
+        idx -= n
+    end
+    idx
+end
 
-function _shifted_between(i, a, b, n)
-    if i < a
-        return _shifted_between(i+n, a, b, n)
-    elseif i > b
-        return _shifted_between(i-n, a, b, n)
+@inline bringwithin(idxs::Tuple, ranges::Tuple) =
+    (bringwithin(idxs[1], ranges[1]), bringwithin(Base.tail(idxs), Base.tail(ranges))...)
+
+@inline bringwithin(idxs::Tuple{}, ranges::Tuple{}) = ()
+
+@inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
+    v = parent(s)
+    ind = OffsetArrays.offset(shifts(s), x)
+    if checkbounds(Bool, v, ind...)
+        @inbounds ret = v[ind...]
     else
-        return i
+        i = bringwithin(ind, Compat.axes(v))
+        @inbounds ret = v[i...]
+    end
+    ret
+end
+
+@inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
+    v = parent(s)
+    ind = OffsetArrays.offset(shifts(s), x)
+    if checkbounds(Bool, v, ind...)
+        @inbounds v[ind...] = el
+    else
+        i = map(bringwithin, ind, Compat.axes(v))
+        @inbounds v[i...] = el
     end
 end
 
-function get_circshifted_index(ind, shift, range)
-    a, b = extrema(range)
-    n = length(range)
-    _shifted_between(ind-shift, a, b, n)
-end
-
-function Base.getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
-    v = parent(s)
-    i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
-    v[i...]
-end
-
-function Base.setindex!(s::CircShiftedArray{T, N, S}, el, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
-    v = parent(s)
-    i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
-    v[i...] = el
-end
-
-Base.parent(s::CircShiftedArray) = s.parent
+parent(s::CircShiftedArray) = s.parent
 
 """
     shifts(s::CircShiftedArray)
@@ -81,3 +93,6 @@ Base.parent(s::CircShiftedArray) = s.parent
 Returns amount by which `s` is shifted compared to `parent(s)`.
 """
 shifts(s::CircShiftedArray) = s.shifts
+
+checkbounds(::CircShiftedArray, I...) = nothing
+checkbounds(::Type{Bool}, ::CircShiftedArray, I...) = true
