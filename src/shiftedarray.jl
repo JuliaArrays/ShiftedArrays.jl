@@ -55,7 +55,7 @@ julia> shifts(s)
 """
 struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
     parent::S
-    shifts::NTuple{N, Int64}
+    shifts::NTuple{N, Int}
     default::M
 end
 

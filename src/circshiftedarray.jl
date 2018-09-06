@@ -27,7 +27,7 @@ julia> copy(s)
 """
 struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::S
-    shifts::NTuple{N, Int64}
+    shifts::NTuple{N, Int}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
         @assert all(step(x) == 1 for x in axes(p))
         new{T, N, typeof(p)}(p, _padded_tuple(p, n))
