@@ -29,7 +29,7 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::OffsetArray{T, N, S}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
         @assert all(step(x) == 1 for x in axes(p))
-        new{T, N, S}(OffsetArray(p, _padded_tuple(p, n)))
+        new{T, N, typeof(p)}(OffsetArray(p, _padded_tuple(p, n)))
     end
 end
 
