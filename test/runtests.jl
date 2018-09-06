@@ -1,4 +1,4 @@
-using ShiftedArrays, Missings, OffsetArrays
+using ShiftedArrays, OffsetArrays
 using Test
 
 @testset "ShiftedVector" begin

@@ -1,7 +1,6 @@
 __precompile__()
 module ShiftedArrays
 
-using Missings
 using RecursiveArrayTools, OffsetArrays
 
 import Base: reduce, mapreduce, checkbounds, getindex, setindex!, parent, size
