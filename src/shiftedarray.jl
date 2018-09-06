@@ -101,3 +101,4 @@ Returns default value.
 default(s::ShiftedArray) = s.default
 
 checkbounds(::ShiftedArray, I...) = nothing
+checkbounds(::Type{Bool}, ::ShiftedArray, I...) = true
