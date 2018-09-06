@@ -73,7 +73,7 @@ ShiftedVector(v::AbstractVector, n = (0,); default = missing) = ShiftedArray(v, 
 
 size(s::ShiftedArray) = size(parent(s))
 
-@inline function getindex(s::ShiftedArray{T, M, N, S}, x::Vararg{Int, N}) where {T, M, N, S<:AbstractArray}
+@inline function getindex(s::ShiftedArray{<:Any, <:Any, N}, x::Vararg{Int, N}) where {N}
     i = OffsetArrays.offset(shifts(s), x)
     v = parent(s)
     if checkbounds(Bool, v, i...)
