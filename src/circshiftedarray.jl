@@ -30,7 +30,7 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     shifts::NTuple{N, Int64}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
         @assert all(step(x) == 1 for x in Compat.axes(p))
-        new{T, N, typeof(v)}(p, _padded_tuple(p, n))
+        new{T, N, typeof(p)}(p, _padded_tuple(p, n))
     end
 end
 
@@ -57,7 +57,7 @@ function bringwithin(ind, range)
     ind
 end
 
-function getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
+@inline function getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
     v = parent(s)
     ind = map(-, x, shifts(s))
     if checkbounds(Bool, v, ind...)
