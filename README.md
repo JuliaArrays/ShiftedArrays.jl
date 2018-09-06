@@ -47,7 +47,7 @@ Use `copy` to collect the shifted data into an `Array`:
 
 ```julia
 julia> copy(s)
-4×4 Array{Union{Int64, Missings.Missing},2}:
+4×4 Array{Union{Int64, Missing},2}:
   missing   missing    missing    missing
   missing   missing    missing    missing
  1         5          9         13       
@@ -184,9 +184,9 @@ Then we should first compute the list of `ShiftedArrays`:
 ```julia
 julia> ss = ShiftedArray.((data,), .-times) # You need to subtract the index to center around times
 3-element Array{ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}},1}:
- Union{Int64, Missings.Missing}[5, 6, 7, 9, 16, 2, 3, 4, 7, missing, missing]                                         
- Union{Int64, Missings.Missing}[2, 3, 4, 7, missing, missing, missing, missing, missing, missing, missing]            
- Union{Int64, Missings.Missing}[4, 7, missing, missing, missing, missing, missing, missing, missing, missing, missing]
+ Union{Int64, Missing}[5, 6, 7, 9, 16, 2, 3, 4, 7, missing, missing]                                         
+ Union{Int64, Missing}[2, 3, 4, 7, missing, missing, missing, missing, missing, missing, missing]            
+ Union{Int64, Missing}[4, 7, missing, missing, missing, missing, missing, missing, missing, missing, missing]
 ```
 
 Then to compute sum of the values of `data` in a range of `-1:2` aligned around `times`, we can simply do:
