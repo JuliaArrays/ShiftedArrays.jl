@@ -45,27 +45,29 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 Base.size(s::CircShiftedArray) = Base.size(parent(s))
 
 
-function _shifted_between(i, a, b, n)
-    if i < a
-        return _shifted_between(i+n, a, b, n)
-    elseif i > b
-        return _shifted_between(i-n, a, b, n)
-    else
-        return i
-    end
-end
-
 function get_circshifted_index(ind, shift, range)
     a, b = extrema(range)
     n = length(range)
-    _shifted_between(ind-shift, a, b, n)
+    while ind < a
+        ind += n
+    end
+    while ind > b
+        ind -= n
+    end
+    ind
 end
 
-function Base.getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
+function Base.getindex(s::CircShiftedArray{T, 1, S}, x::Int) where {T, S<:AbstractArray}
     v = parent(s)
-    i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
+    i = get_circshifted_index(x, shifts(s), Compat.axes(v)[1])
     v[i...]
 end
+
+# function Base.getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
+#     v = parent(s)
+#     i = map(get_circshifted_index, x, shifts(s), Compat.axes(v))
+#     v[i...]
+# end
 
 function Base.setindex!(s::CircShiftedArray{T, N, S}, el, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
     v = parent(s)
