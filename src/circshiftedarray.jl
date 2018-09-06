@@ -45,31 +45,36 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
 
-@inline function bringwithin(ind, range)
+@inline function bringwithin(idx::Int, range::AbstractRange)
     a, b = extrema(range)
     n = length(range)
-    while ind < a
-        ind += n
+    while idx < a
+        idx += n
     end
-    while ind > b
-        ind -= n
+    while idx > b
+        idx -= n
     end
-    ind
+    idx
 end
 
-@inline function getindex(s::CircShiftedArray{T, N, S}, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
+@inline bringwithin(idxs::Tuple, ranges::Tuple) =
+    (bringwithin(idxs[1], ranges[1]), bringwithin(Base.tail(idxs), Base.tail(ranges))...)
+
+@inline bringwithin(idxs::Tuple{}, ranges::Tuple{}) = ()
+
+@inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
     ind = OffsetArrays.offset(shifts(s), x)
     if checkbounds(Bool, v, ind...)
         @inbounds ret = v[ind...]
     else
-        i = map(bringwithin, ind, Compat.axes(v))
+        i = bringwithin(ind, Compat.axes(v))
         @inbounds ret = v[i...]
     end
     ret
 end
 
-@inline function setindex!(s::CircShiftedArray{T, N, S}, el, x::Vararg{Int, N}) where {T, N, S<:AbstractArray}
+@inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
     ind = OffsetArrays.offset(shifts(s), x)
     if checkbounds(Bool, v, ind...)
