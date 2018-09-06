@@ -28,10 +28,11 @@ julia> copy(s)
 struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::S
     shifts::NTuple{N, Int64}
+    function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
+        @assert all(step(x) == 1 for x in Compat.axes(p))
+        new{T, N, typeof(v)}(p, _padded_tuple(p, n))
+    end
 end
-
-CircShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N} =
-    CircShiftedArray{T, N, typeof(v)}(v, _padded_tuple(v, n))
 
 """
     CircShiftedVector{T, S<:AbstractArray}
@@ -83,3 +84,5 @@ Base.parent(s::CircShiftedArray) = s.parent
 Returns amount by which `s` is shifted compared to `parent(s)`.
 """
 shifts(s::CircShiftedArray) = s.shifts
+
+Base.checkbounds(::CircShiftedArray, I...) = nothing
