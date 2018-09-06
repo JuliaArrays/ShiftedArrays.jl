@@ -33,6 +33,7 @@ end
                                12 16 missing missing])
     sneg = ShiftedArray(v, (0, -2), default = -100)
     @test all(sneg .== coalesce.(s, default(sneg)))
+    @test checkbounds(Bool, sv, 123, 123)
 end
 
 @testset "CircShiftedVector" begin
@@ -51,6 +52,10 @@ end
     sv[2] = 0
     @test collect(sv) == [3, 0, 4, 1]
     @test v == [1, 3, 0, 4]
+    sv[7] = 12
+    @test collect(sv) == [3, 0, 12, 1]
+    @test v == [1, 3, 0, 12]
+    @test checkbounds(Bool, sv, 123)
 end
 
 @testset "CircShiftedArray" begin
