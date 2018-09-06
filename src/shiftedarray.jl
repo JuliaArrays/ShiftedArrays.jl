@@ -54,13 +54,12 @@ julia> shifts(s)
 ```
 """
 struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
-    parent::S
-    shifts::NTuple{N, Int}
+    parent::OffsetArray{T, N, S}
     default::M
 end
 
-ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N); default::M = missing) where {T, N, M} =
-     ShiftedArray{T, M, N, typeof(v)}(v, _padded_tuple(v, n), default)
+ShiftedArray(v::AbstractArray, n = Tuple(0 for i in 1:N); default = missing) =
+     ShiftedArray(OffsetArray(v, _padded_tuple(v, n)), default)
 
 """
     ShiftedVector{T, S<:AbstractArray}
@@ -74,24 +73,23 @@ ShiftedVector(v::AbstractVector, n = (0,); default = missing) = ShiftedArray(v, 
 size(s::ShiftedArray) = size(parent(s))
 
 @inline function getindex(s::ShiftedArray{<:Any, <:Any, N}, x::Vararg{Int, N}) where {N}
-    i = OffsetArrays.offset(shifts(s), x)
-    v = parent(s)
-    if checkbounds(Bool, v, i...)
-        @inbounds ret = v[i...]
+    v = s.parent
+    if checkbounds(Bool, v, x...)
+        @inbounds ret = v[x...]
     else
         ret = default(s)
     end
     ret
 end
 
-parent(s::ShiftedArray) = s.parent
+parent(s::ShiftedArray) = parent(s.parent)
 
 """
     shifts(s::ShiftedArray)
 
 Returns amount by which `s` is shifted compared to `parent(s)`.
 """
-shifts(s::ShiftedArray) = s.shifts
+shifts(s::ShiftedArray) = s.parent.offsets
 
 """
     default(s::ShiftedArray)
