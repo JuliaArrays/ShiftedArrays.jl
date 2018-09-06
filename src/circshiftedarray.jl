@@ -80,7 +80,7 @@ end
     if checkbounds(Bool, v, ind...)
         @inbounds v[ind...] = el
     else
-        i = map(bringwithin, ind, axes(v))
+        i = bringwithin(ind, axes(v))
         @inbounds v[i...] = el
     end
 end
