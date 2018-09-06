@@ -11,9 +11,9 @@ function. Indices for which the iterable is empty will return `default`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
- Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
- Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missing,1,Array{Int64,1}},1}:
+ Union{Int64, Missing}[5, 9, 6, 7, missing, missing]
+ Union{Int64, Missing}[6, 7, missing, missing, missing, missing]
 
 julia> reduce(+, ss, 1:2)
 2-element Array{Int64,1}:
@@ -48,9 +48,9 @@ function. Indices for which the iterable is empty will return `default`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
- Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
- Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missing,1,Array{Int64,1}},1}:
+ Union{Int64, Missing}[5, 9, 6, 7, missing, missing]
+ Union{Int64, Missing}[6, 7, missing, missing, missing, missing]
 
 julia> mapreduce(t -> t^2, +, ss, 1:2)
 2-element Array{Int64,1}:
@@ -85,9 +85,9 @@ iterable is empty will return `default`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
- Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
- Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missing,1,Array{Int64,1}},1}:
+ Union{Int64, Missing}[5, 9, 6, 7, missing, missing]
+ Union{Int64, Missing}[6, 7, missing, missing, missing, missing]
 
 julia> reduce_vec(mean, ss, 1:2)
 2-element Array{Float64,1}:
@@ -122,9 +122,9 @@ iterable is empty will return `default`.
 julia> v = [1, 3, 5, 9, 6, 7];
 
 julia> ss = ShiftedArray.((v,), [-2, -4])
-2-element Array{ShiftedArrays.ShiftedArray{Int64,Missings.Missing,1,Array{Int64,1}},1}:
- Union{Int64, Missings.Missing}[5, 9, 6, 7, missing, missing]
- Union{Int64, Missings.Missing}[6, 7, missing, missing, missing, missing]
+2-element Array{ShiftedArrays.ShiftedArray{Int64,Missing,1,Array{Int64,1}},1}:
+ Union{Int64, Missing}[5, 9, 6, 7, missing, missing]
+ Union{Int64, Missing}[6, 7, missing, missing, missing, missing]
 
 julia> mapreduce_vec(log, mean, ss, 1:2)
 2-element Array{Float64,1}:
