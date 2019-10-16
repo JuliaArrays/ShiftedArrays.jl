@@ -1,3 +1,16 @@
+## ShiftedArrays 0.5.1 release notes
+
+### New features
+
+- Support for OffsetArrays v0.11
+- Support for RecursiveArrayTools v1
+
+## ShiftedArrays 0.5.0 release notes
+
+### New features
+
+- Support for Julia 1
+
 ## ShiftedArrays 0.4 release notes
 
 ### Breaking changes
