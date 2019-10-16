@@ -2,8 +2,6 @@
 
 [![Build Status](https://travis-ci.org/piever/ShiftedArrays.jl.svg?branch=master)](https://travis-ci.org/piever/ShiftedArrays.jl)
 [![codecov.io](http://codecov.io/github/piever/ShiftedArrays.jl/coverage.svg?branch=master)](http://codecov.io/github/piever/ShiftedArrays.jl?branch=master)
-[![ShiftedArrays](http://pkg.julialang.org/badges/ShiftedArrays_0.6.svg)](http://pkg.julialang.org/?pkg=ShiftedArrays)
-[![ShiftedArrays](http://pkg.julialang.org/badges/ShiftedArrays_0.7.svg)](http://pkg.julialang.org/?pkg=ShiftedArrays)
 
 Implementation of shifted arrays.
 
