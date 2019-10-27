@@ -64,7 +64,7 @@ end
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
-    ind = OffsetArrays.offset(shifts(s), x)
+    ind = offset(shifts(s), x)
     if checkbounds(Bool, v, ind...)
         @inbounds ret = v[ind...]
     else
@@ -76,7 +76,7 @@ end
 
 @inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
-    ind = OffsetArrays.offset(shifts(s), x)
+    ind = offset(shifts(s), x)
     if checkbounds(Bool, v, ind...)
         @inbounds v[ind...] = el
     else

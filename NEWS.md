@@ -1,3 +1,10 @@
+## ShiftedArrays 1.0.0 release notes
+
+### Breaking changes
+
+- Removed special `reduce, reduce_vec, mapreduce, mapreduce_vec` methods
+- Removed `to_array, to_offsetarray` methods
+
 ## ShiftedArrays 0.5.1 release notes
 
 ### New features
