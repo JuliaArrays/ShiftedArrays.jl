@@ -11,7 +11,7 @@ Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
 julia> v = [1, 3, 5, 4];
 
 julia> s = CircShiftedArray(v, (1,))
-4-element ShiftedArrays.CircShiftedArray{Int64,1,Array{Int64,1}}:
+4-element CircShiftedArray{Int64,1,Array{Int64,1}}:
  4
  1
  3
