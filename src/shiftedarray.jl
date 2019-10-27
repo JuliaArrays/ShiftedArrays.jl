@@ -73,10 +73,8 @@ ShiftedVector(v::AbstractVector, n = (0,); default = missing) = ShiftedArray(v, 
 
 size(s::ShiftedArray) = size(parent(s))
 
-# Computing a shifted index (subtracting the offset), from OffsetArrays
-@inline offset(offsets::NTuple{N,Int}, inds::NTuple{N,Int}) where {N} =
-    (inds[1]-offsets[1], offset(Base.tail(offsets), Base.tail(inds))...)
-offset(::Tuple{}, ::Tuple{}) = ()
+# Computing a shifted index (subtracting the offset)
+offset(offsets::NTuple{N,Int}, inds::NTuple{N,Int}) where {N} = map(-, inds, offsets)
 
 @inline function getindex(s::ShiftedArray{<:Any, <:Any, N}, x::Vararg{Int, N}) where {N}
     i = offset(shifts(s), x)
