@@ -9,6 +9,7 @@ makedocs(
     format = Documenter.HTML(),
     pages = Any[
         "Introduction" => "index.md",
+        "API" => "api.md",
     ]
 )
 
