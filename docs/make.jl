@@ -11,3 +11,14 @@ makedocs(
         "Introduction" => "index.md",
     ]
 )
+
+# Deploy built documentation from Travis.
+# =======================================
+
+deploydocs(
+    # options
+    repo = "github.com/piever/ShiftedArrays.jl.git",
+    target = "build",
+    deps = nothing,
+    make = nothing,
+)
