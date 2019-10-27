@@ -4,7 +4,9 @@
 
 ```@docs
 ShiftedArray
+ShiftedVector
 CircShiftedArray
+CircShiftedVector
 ```
 
 ## Shifting operations
@@ -13,4 +15,11 @@ CircShiftedArray
 lag
 lead
 ShiftedArrays.circshift
+```
+
+## Accessor functions
+
+```@docs
+shifts
+default
 ```
