@@ -1,8 +1,9 @@
 using Documenter, ShiftedArrays
 
+DocMeta.setdocmeta!(ShiftedArrays, :DocTestSetup, :(using ShiftedArrays); recursive=true)
+
 makedocs(
     # options
-    doctest = false,
     modules = [ShiftedArrays],
     sitename = "ShiftedArrays.jl",
     format = Documenter.HTML(),
