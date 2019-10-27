@@ -4,3 +4,4 @@
 deps/already_showed
 *play.jl
 Manifest.toml
+docs/build
