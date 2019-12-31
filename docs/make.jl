@@ -18,7 +18,7 @@ makedocs(
 
 deploydocs(
     # options
-    repo = "github.com/piever/ShiftedArrays.jl.git",
+    repo = "github.com/JuliaArrays/ShiftedArrays.jl.git",
     target = "build",
     deps = nothing,
     make = nothing,
