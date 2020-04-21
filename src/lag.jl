@@ -106,7 +106,7 @@ lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); de
 
 
 """
-    lag(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing) -> Vector
+    lag(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt))); default = missing) -> Vector
 
 Shifts with respect to a times given in the vector `dt`.  The third variable `period` gives the period by which to shift.
 `default` specifies a default value when the shifted time is not in `dt`.
@@ -130,7 +130,7 @@ julia> lag(v, dt, Day(1))
  missing
 3
 """
-function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing)
+function lag(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt)); default = missing)
     inds = keys(dt)
     dtdict = Dict{eltype(dt),eltype(inds)}()
     for (val, ind) in zip(dt, inds)
@@ -139,9 +139,14 @@ function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt))
      end
      Union{eltype(v), typeof(default)}[(i = get(dtdict, x - period, nothing); i !== nothing ? v[i] : default) for x in dt]
 end
+onestep(::Type{T}) where {T} = oneunit(T)
+if VERSION >= v"v1.5"
+  using Dates
+  onestep(::Type{T}) where {T <: TimeType} = eps(T)
+end
 
 """
-    lead(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing) -> Vector
+    lead(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt))); default = missing) -> Vector
 
 Shifts with respect to a vector of times `dt`. The third variable `period` gives the period by which to shift.
 `default` specifies a default value when the shifted time is not in `dt`.
@@ -158,6 +163,6 @@ julia> lead(v, dt, 1)
   5
   missing
 """
-function lead(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing)
+function lead(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt)); default = missing)
     lag(v, dt, -period; default = default)
 end
