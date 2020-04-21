@@ -1,4 +1,4 @@
-using ShiftedArrays, Test
+using ShiftedArrays, Test, Dates
 
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
@@ -96,4 +96,22 @@ end
     @test isequal(diff2, [-7, -9, missing, missing])
 
     @test all(lead(v, 2, default = -100) .== coalesce.(lead(v, 2), -100))
+
+  
+    x = [4, 5, 6]
+    date = [1989, 1991, 1992]
+    @test all(lag(x, date) .=== [missing, missing, 5])
+    @test all(lag(x, date; default = 0) .=== [0, 0, 5])
+    date = [Date(1989, 1, 1), Date(1989, 1, 3), Date(1989, 1, 4)]
+    @test all(lag(x, date, Day(1)) .=== [missing, missing, 5])
+    @test all(lag(x, date, Day(2)) .=== [missing, 4, missing])
+    @test all(lag(x, date, Day(5)) .=== [missing, missing, missing])
+    @test all(lead(x, date, Day(1)) .=== [missing, 6, missing])
+    @test all(lead(x, date, Day(2)) .=== [5, missing, missing])
+    @test all(lead(x, date, Day(5)) .=== [missing, missing, missing])
+    date = [DateTime(1989, 1, 1), DateTime(1989, 1, 3), DateTime(1989, 1, 4)]
+    @test all(lag(x, date, Millisecond(1)) .=== [missing, missing, missing])
+    @test all(lag(x, date, Day(1)) .=== [missing, missing, 5])
+    date = [Date(1989, 1, 1), Date(1989, 1, 3), Date(1989, 1, 3)]
+    @test_throws ErrorException lag(x, date, Day(1))
 end

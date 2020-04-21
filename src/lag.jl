@@ -97,3 +97,67 @@ julia> s = lead(v, (0, 2))
 ```
 """
 lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); default = default)
+
+
+
+
+
+
+
+
+"""
+    lag(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing) -> Vector
+
+Shifts with respect to a times given in the vector `dt`.  The third variable `period` gives the period by which to shift.
+`default` specifies a default value when the shifted time is not in `dt`.
+Elements in `dt` must all be distinct.
+
+# Examples
+
+```jldoctest lead
+julia> v = [1, 3, 5, 4];
+julia> dt = [1990, 1992, 1993];
+julia> lag(v, dt)
+3-element Array{Union{Missing, Int64},1}:
+  missing
+  missing
+ 3
+julia> using Dates
+julia> dt = [Date(1990, 1, 1), Date(1990, 1, 3), Date(1990, 1, 4)]
+julia> lag(v, dt, Day(1))
+3-element Array{Union{Missing, Int64},1}:
+ missing
+ missing
+3
+"""
+function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing)
+    inds = keys(dt)
+    dtdict = Dict{eltype(dt),eltype(inds)}()
+    for (val, ind) in zip(dt, inds)
+         out = get!(dtdict, val, ind)
+         out != ind && error("Elements of dt must be distinct")
+     end
+     Union{eltype(v), typeof(default)}[(i = get(dtdict, x - period, nothing); i !== nothing ? v[i] : default) for x in dt]
+end
+
+"""
+    lead(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing) -> Vector
+
+Shifts with respect to a vector of times `dt`. The third variable `period` gives the period by which to shift.
+`default` specifies a default value when the shifted time is not in `dt`.
+Elements in `dt` must all be distinct.
+
+# Examples
+
+```jldoctest lead
+julia> v = [1, 3, 5, 4];
+julia> dt = [1990, 1992, 1993];
+julia> lead(v, dt, 1)
+3-element Array{Union{Missing, Int64},1}:
+  missing
+  5
+  missing
+"""
+function lead(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing)
+    lag(v, dt, -period; default = default)
+end
