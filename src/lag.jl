@@ -123,7 +123,7 @@ julia> lag(v, dt, 1)
   missing
  3
 """
-function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)), default = missing)
+function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing)
     inds = keys(dt)
     dtdict = Dict{eltype(dt),eltype(inds)}()
     for (val, ind) in zip(dt, inds)
@@ -151,7 +151,7 @@ julia> lead(v, dt, 1)
   5
   missing
 """
-function lead(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)), default = missing)
-    lag(v, dt, -period, default)
+function lead(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing)
+    lag(v, dt, -period; default = default)
 end
 

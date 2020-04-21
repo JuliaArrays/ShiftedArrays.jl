@@ -101,6 +101,8 @@ end
     x = [4, 5, 6]
     date = [1989, 1991, 1992]
     @test all(lag(x, date) .=== [missing, missing, 5])
+    @test all(lag(x, date; default = 0) .=== [0, 0, 5])
+
     date = [Date(1989, 1, 1), Date(1989, 1, 3), Date(1989, 1, 4)]
     @test all(lag(x, date, Day(1)) .=== [missing, missing, 5])
     @test all(lag(x, date, Day(2)) .=== [missing, 4, missing])
