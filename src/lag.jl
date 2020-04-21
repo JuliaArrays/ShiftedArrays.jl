@@ -106,7 +106,7 @@ lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); de
 
 
 """
-    lag(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing) -> Vector
+    lag(v::AbstractVector, dt::AbstractVector, n = onestep(eltype(dt)); default = missing) -> Vector
 
 Shifts with respect to a time variable `dt`.  The third variable refers to the period to shift.
 `default` specifies a default value when the shifted time is not in the time variable.
@@ -123,7 +123,7 @@ julia> lag(v, dt, 1)
   missing
  3
 """
-function lag(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing)
+function lag(v::AbstractVector, dt::AbstractVector, n = onestep(eltype(dt)); default = missing)
     inds = keys(dt)
     dtdict = Dict{eltype(dt),eltype(inds)}()
     for (val, ind) in zip(dt, inds)
@@ -134,7 +134,7 @@ function lag(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); def
 end
 
 """
-    lead(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing) -> Vector
+    lead(v::AbstractVector, dt::AbstractVector, n = onestep(eltype(dt)); default = missing) -> Vector
 
 Shifts with respect to a time variable `dt`. The third variable refers to the period to shift.
 `default` specifies a default value when the shifted to,e is not in the time variable.
@@ -151,7 +151,17 @@ julia> lead(v, dt, 1)
   5
   missing
 """
-function lead(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing)
+function lead(v::AbstractVector, dt::AbstractVector, n = onestep(eltype(dt)); default = missing)
     lag(v, dt, -n; default = default)
+end
+
+onestep(::Type{T}) where {T} = oneunit(T)
+using Dates
+if VERSION >= v"1.5.0-DEV.634"
+  onestep(::Type{T}) where {T <: TimeType} = eps(T)
+else
+  onestep(::Type{Time}) = Nanosecond(1)
+  onestep(::Type{DateTime}) = Millisecond(1)
+  onestep(::Type{Date}) = Day(1)
 end
 
