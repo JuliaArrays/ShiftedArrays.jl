@@ -106,10 +106,10 @@ lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); de
 
 
 """
-    lag(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt)); default = missing) -> Vector
+    lag(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing) -> Vector
 
-Shifts with respect to a time variable `dt`.  The third variable refers to the amount of time to shift.
-`default` specifies a default value when the shifted period is not in the time variable.
+Shifts with respect to a time variable `dt`.  The third variable refers to the period to shift.
+`default` specifies a default value when the shifted time is not in the time variable.
 Elements in the time variable `dt` must all be distinct.
 
 # Examples
@@ -123,21 +123,21 @@ julia> lag(v, dt, 1)
   missing
  3
 """
-function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing)
+function lag(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing)
     inds = keys(dt)
     dtdict = Dict{eltype(dt),eltype(inds)}()
     for (val, ind) in zip(dt, inds)
          out = get!(dtdict, val, ind)
          out != ind && error("Elements of dt must be distinct")
      end
-     Union{eltype(v), typeof(default)}[(i = get(dtdict, x - period, nothing); i !== nothing ? v[i] : default) for x in dt]
+     Union{eltype(v), typeof(default)}[(i = get(dtdict, x - n, nothing); i !== nothing ? v[i] : default) for x in dt]
 end
 
 """
-    lead(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt)); default = missing) -> Vector
+    lead(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing) -> Vector
 
-Shifts with respect to a time variable `dt`. The third variable refers to the amount of time to shift.
-`default` specifies a default value when the shifted period is not in the time variable.
+Shifts with respect to a time variable `dt`. The third variable refers to the period to shift.
+`default` specifies a default value when the shifted to,e is not in the time variable.
 Elements in the time variable `dt` must all be distinct.
 
 # Examples
@@ -151,7 +151,7 @@ julia> lead(v, dt, 1)
   5
   missing
 """
-function lead(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)); default = missing)
-    lag(v, dt, -period; default = default)
+function lead(v::AbstractVector, dt::AbstractVector, n = oneunit(eltype(dt)); default = missing)
+    lag(v, dt, -n; default = default)
 end
 
