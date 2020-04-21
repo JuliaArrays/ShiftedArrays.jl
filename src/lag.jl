@@ -97,3 +97,61 @@ julia> s = lead(v, (0, 2))
 ```
 """
 lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); default = default)
+
+
+
+
+
+
+
+
+"""
+    lag(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt)); default = missing) -> Vector
+
+Shifts with respect to a time variable `dt`.  The third variable refers to the amount of time to shift.
+`default` specifies a default value when the shifted period is not in the time variable.
+Elements in the time variable `dt` must all be distinct.
+
+# Examples
+
+```jldoctest lead
+julia> v = [1, 3, 5, 4];
+julia> dt = [1990, 1992, 1993];
+julia> lag(v, dt, 1)
+3-element Array{Union{Missing, Int64},1}:
+  missing
+  missing
+ 3
+"""
+function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)), default = missing)
+    inds = keys(dt)
+    dtdict = Dict{eltype(dt),eltype(inds)}()
+    for (val, ind) in zip(dt, inds)
+         out = get!(dtdict, val, ind)
+         out != ind && error("Elements of dt must be distinct")
+     end
+     Union{eltype(v), typeof(default)}[(i = get(dtdict, x - period, nothing); i !== nothing ? v[i] : default) for x in dt]
+end
+
+"""
+    lead(v::AbstractVector, dt::AbstractVector, period = onestep(eltype(dt)); default = missing) -> Vector
+
+Shifts with respect to a time variable `dt`. The third variable refers to the amount of time to shift.
+`default` specifies a default value when the shifted period is not in the time variable.
+Elements in the time variable `dt` must all be distinct.
+
+# Examples
+
+```jldoctest lead
+julia> v = [1, 3, 5, 4];
+julia> dt = [1990, 1992, 1993];
+julia> lead(v, dt, 1)
+3-element Array{Union{Missing, Int64},1}:
+  missing
+  5
+  missing
+"""
+function lead(v::AbstractVector, dt::AbstractVector, period = oneunit(eltype(dt)), default = missing)
+    lag(v, dt, -period, default)
+end
+
