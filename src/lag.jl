@@ -106,58 +106,58 @@ lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); de
 
 
 """
-    lag(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing) -> Vector
+    lag(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing) -> Vector
 
-Shifts with respect to a times given in the vector `dt`.  The third variable `period` gives the period by which to shift.
-`default` specifies a default value when the shifted time is not in `dt`.
-Elements in `dt` must all be distinct.
+Shifts with respect to a times given in the vector `times`.  The third variable `period` gives the period by which to shift.
+`default` specifies a default value when the shifted time is not in `times`.
+Elements in `times` must all be distinct.
 
 # Examples
 
 ```jldoctest lead
 julia> v = [1, 3, 5, 4];
-julia> dt = [1990, 1992, 1993];
-julia> lag(v, dt)
+julia> times = [1990, 1992, 1993];
+julia> lag(v, times)
 3-element Array{Union{Missing, Int64},1}:
   missing
   missing
  3
 julia> using Dates
-julia> dt = [Date(1990, 1, 1), Date(1990, 1, 3), Date(1990, 1, 4)]
-julia> lag(v, dt, Day(1))
+julia> times = [Date(1990, 1, 1), Date(1990, 1, 3), Date(1990, 1, 4)]
+julia> lag(v, times, Day(1))
 3-element Array{Union{Missing, Int64},1}:
  missing
  missing
 3
 """
-function lag(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing)
-    inds = keys(dt)
-    dtdict = Dict{eltype(dt),eltype(inds)}()
-    for (val, ind) in zip(dt, inds)
-         out = get!(dtdict, val, ind)
-         out != ind && error("Elements of dt must be distinct")
+function lag(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing)
+    inds = keys(times)
+    timesdict = Dict{eltype(times),eltype(inds)}()
+    for (val, ind) in zip(times, inds)
+         out = get!(timesdict, val, ind)
+         out != ind && error("Times must be distinct")
      end
-     Union{eltype(v), typeof(default)}[(i = get(dtdict, x - period, nothing); i !== nothing ? v[i] : default) for x in dt]
+     Union{eltype(v), typeof(default)}[(i = get(timesdict, x - period, nothing); i !== nothing ? v[i] : default) for x in times]
 end
 
 """
-    lead(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing) -> Vector
+    lead(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing) -> Vector
 
-Shifts with respect to a vector of times `dt`. The third variable `period` gives the period by which to shift.
-`default` specifies a default value when the shifted time is not in `dt`.
-Elements in `dt` must all be distinct.
+Shifts with respect to a vector of times `times`. The third variable `period` gives the period by which to shift.
+`default` specifies a default value when the shifted time is not in `times`.
+Elements in `times` must all be distinct.
 
 # Examples
 
 ```jldoctest lead
 julia> v = [1, 3, 5, 4];
-julia> dt = [1990, 1992, 1993];
-julia> lead(v, dt, 1)
+julia> times = [1990, 1992, 1993];
+julia> lead(v, times, 1)
 3-element Array{Union{Missing, Int64},1}:
   missing
   5
   missing
 """
-function lead(v::AbstractVector, dt::AbstractVector, period = oneunit(zero(eltype(dt))); default = missing)
-    lag(v, dt, -period; default = default)
+function lead(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing)
+    lag(v, times, -period; default = default)
 end

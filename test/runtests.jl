@@ -98,20 +98,23 @@ end
     @test all(lead(v, 2, default = -100) .== coalesce.(lead(v, 2), -100))
 
   
-    x = [4, 5, 6]
-    date = [1989, 1991, 1992]
-    @test all(lag(x, date) .=== [missing, missing, 5])
-    @test all(lag(x, date; default = 0) .=== [0, 0, 5])
-    date = [Date(1989, 1, 1), Date(1989, 1, 3), Date(1989, 1, 4)]
-    @test all(lag(x, date, Day(1)) .=== [missing, missing, 5])
-    @test all(lag(x, date, Day(2)) .=== [missing, 4, missing])
-    @test all(lag(x, date, Day(5)) .=== [missing, missing, missing])
-    @test all(lead(x, date, Day(1)) .=== [missing, 6, missing])
-    @test all(lead(x, date, Day(2)) .=== [5, missing, missing])
-    @test all(lead(x, date, Day(5)) .=== [missing, missing, missing])
-    date = [DateTime(1989, 1, 1), DateTime(1989, 1, 3), DateTime(1989, 1, 4)]
-    @test all(lag(x, date, Millisecond(1)) .=== [missing, missing, missing])
-    @test all(lag(x, date, Day(1)) .=== [missing, missing, 5])
-    date = [Date(1989, 1, 1), Date(1989, 1, 3), Date(1989, 1, 3)]
-    @test_throws ErrorException lag(x, date, Day(1))
+    v = [4, 5, 6]
+    times = [1989, 1991, 1992]
+    @test all(lag(v, times) .=== [missing, missing, 5])
+    @test all(lag(v, times; default = 0) .=== [0, 0, 5])
+    @test all(lead(v, times) .=== [missing, 6, missing])
+    @test all(lead(v, times; default = 0) .=== [0, 6, 0])
+    times = [Date(1989, 1, 1), Date(1989, 1, 3), Date(1989, 1, 4)]
+    @test all(lag(v, times, Day(1)) .=== [missing, missing, 5])
+    @test all(lag(v, times, Day(2)) .=== [missing, 4, missing])
+    @test all(lag(v, times, Day(5)) .=== [missing, missing, missing])
+    @test all(lead(v, times, Day(1)) .=== [missing, 6, missing])
+    @test all(lead(v, times, Day(1)) .=== lag(v, times, -Day(1)))
+    @test all(lead(v, times, Day(2)) .=== [5, missing, missing])
+    @test all(lead(v, times, Day(5)) .=== [missing, missing, missing])
+    times = [DateTime(1989, 1, 1), DateTime(1989, 1, 3), DateTime(1989, 1, 4)]
+    @test all(lag(v, times, Millisecond(1)) .=== [missing, missing, missing])
+    @test all(lag(v, times, Day(1)) .=== [missing, missing, 5])
+    times = [Date(1989, 1, 1), Date(1989, 1, 3), Date(1989, 1, 3)]
+    @test_throws ErrorException lag(v, times, Day(1))
 end
