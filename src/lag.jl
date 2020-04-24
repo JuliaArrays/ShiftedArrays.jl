@@ -138,8 +138,10 @@ function lag(v::AbstractVector, times::AbstractVector, period = oneunit(zero(elt
     for (val, ind) in zip(times, inds)
          out = get!(timesdict, val, ind)
          out != ind && error("Times must be distinct")
-     end
-     Union{eltype(v), typeof(default)}[(i = get(timesdict, x - period, nothing); i !== nothing ? v[i] : default) for x in times]
+    end
+    return Union{eltype(v), typeof(default)}[
+         (i = get(timesdict, x - period, nothing); i !== nothing ? v[i] : default) for x in times
+    ]
 end
 
 """
