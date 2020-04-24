@@ -131,6 +131,8 @@ julia> lag(v, times, Day(1))
 3
 """
 function lag(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing)
+	# Note that oneunit(zero(Date)) = Day(1) in Julia 1.5
+	# Code follows the function indexin
     inds = keys(times)
     timesdict = Dict{eltype(times),eltype(inds)}()
     for (val, ind) in zip(times, inds)
