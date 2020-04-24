@@ -106,7 +106,7 @@ lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); de
 
 
 """
-    lag(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing) -> Vector
+    lag(v::AbstractVector, times::AbstractVector, period = oneunit(eltype(times)); default = missing) -> Vector
 
 Shifts with respect to a times given in the vector `times`.  The third variable `period` gives the period by which to shift.
 `default` specifies a default value when the shifted time is not in `times`.
@@ -130,9 +130,8 @@ julia> lag(v, times, Day(1))
  missing
 3
 """
-function lag(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing)
-	# Note that oneunit(zero(Date)) = Day(1) in Julia 1.5
-	# Code follows the function indexin
+function lag(v::AbstractVector, times::AbstractVector, period = oneunit(eltype(times)); default = missing)
+   	# Code follows the function indexin
     inds = keys(times)
     timesdict = Dict{eltype(times),eltype(inds)}()
     for (val, ind) in zip(times, inds)
@@ -145,7 +144,7 @@ function lag(v::AbstractVector, times::AbstractVector, period = oneunit(zero(elt
 end
 
 """
-    lead(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing) -> Vector
+    lead(v::AbstractVector, times::AbstractVector, period = oneunit(eltype(times)); default = missing) -> Vector
 
 Shifts with respect to a vector of times `times`. The third variable `period` gives the period by which to shift.
 `default` specifies a default value when the shifted time is not in `times`.
@@ -162,6 +161,6 @@ julia> lead(v, times, 1)
   5
   missing
 """
-function lead(v::AbstractVector, times::AbstractVector, period = oneunit(zero(eltype(times))); default = missing)
+function lead(v::AbstractVector, times::AbstractVector, period = oneunit(eltype(times)); default = missing)
     lag(v, times, -period; default = default)
 end
