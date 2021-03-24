@@ -46,15 +46,7 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 size(s::CircShiftedArray) = size(parent(s))
 
 @inline function bringwithin(idx::Int, range::AbstractRange)
-    a, b = extrema(range)
-    n = length(range)
-    while idx < a
-        idx += n
-    end
-    while idx > b
-        idx -= n
-    end
-    idx
+    mod(idx,range)
 end
 
 @inline bringwithin(idxs::Tuple, ranges::Tuple) =
@@ -64,25 +56,19 @@ end
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
+    @boundscheck checkbounds(v, x...)
     ind = offset(shifts(s), x)
-    if checkbounds(Bool, v, ind...)
-        @inbounds ret = v[ind...]
-    else
-        i = bringwithin(ind, axes(v))
-        @inbounds ret = v[i...]
-    end
+    i = bringwithin(ind, axes(v))
+    @inbounds ret = v[i...]
     ret
 end
 
 @inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
+    @boundscheck checkbounds(v, x...)
     ind = offset(shifts(s), x)
-    if checkbounds(Bool, v, ind...)
-        @inbounds v[ind...] = el
-    else
-        i = bringwithin(ind, axes(v))
-        @inbounds v[i...] = el
-    end
+    i = bringwithin(ind, axes(v))
+    @inbounds v[i...] = el
 end
 
 parent(s::CircShiftedArray) = s.parent
@@ -94,5 +80,5 @@ Returns amount by which `s` is shifted compared to `parent(s)`.
 """
 shifts(s::CircShiftedArray) = s.shifts
 
-checkbounds(::CircShiftedArray, I...) = nothing
-checkbounds(::Type{Bool}, ::CircShiftedArray, I...) = true
+# checkbounds(::CircShiftedArray, I...) = nothing
+# checkbounds(::Type{Bool}, ::CircShiftedArray, I...) = true
