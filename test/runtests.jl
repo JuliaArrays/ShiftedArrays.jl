@@ -35,6 +35,17 @@ end
     @test checkbounds(Bool, sv, 123, 123)
 end
 
+@testset "bringwithin" begin
+    @test ShiftedArrays.bringwithin(1, 1:10) == 1   
+    @test ShiftedArrays.bringwithin(11, 1:10) == 1   
+    @test ShiftedArrays.bringwithin(12, 1:10) == 2  
+    @test ShiftedArrays.bringwithin(0, 1:10) == 10 
+    @test ShiftedArrays.bringwithin(-1, 1:10) == 9  
+    @test ShiftedArrays.bringwithin((12, 13), axes(randn((3, 4)))) == (3, 1)
+    @test ShiftedArrays.bringwithin((-1, 13), axes(randn((3, 4)))) == (2, 1)
+end
+
+
 @testset "CircShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = CircShiftedVector(v, -1)

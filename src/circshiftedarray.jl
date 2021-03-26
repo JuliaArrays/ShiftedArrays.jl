@@ -45,8 +45,10 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
 
+
 @inline function bringwithin(idx::Int, range::AbstractRange)
-    mod(idx,range)
+    t = mod(idx - first(range), last(range))
+    return first(range) .+ t 
 end
 
 @inline bringwithin(idxs::Tuple, ranges::Tuple) =
@@ -54,10 +56,29 @@ end
 
 @inline bringwithin(idxs::Tuple{}, ranges::Tuple{}) = ()
 
+"""
+    bringwithin(idx, idx2)
+
+Moves the indices or index in `idx` into the interval covered by `idx2`
+
+# Example
+```jldoctest
+julia> ShiftedArrays.bringwithin(1, 1:10)
+1
+
+julia> ShiftedArrays.bringwithin(-1, 1:10)
+9
+```
+"""
+bringwithin
+
+
+
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
     @boundscheck checkbounds(v, x...)
     ind = offset(shifts(s), x)
+
     i = bringwithin(ind, axes(v))
     @inbounds ret = v[i...]
     ret
