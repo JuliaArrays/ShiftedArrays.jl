@@ -48,11 +48,10 @@ size(s::CircShiftedArray) = size(parent(s))
 
 @inline function bringwithin(idx::Int, range::AbstractRange)
     t = mod(idx - first(range), last(range))
-    return first(range) .+ t 
+    return first(range) + t 
 end
 
-@inline bringwithin(idxs::Tuple, ranges::Tuple) =
-    (bringwithin(idxs[1], ranges[1]), bringwithin(Base.tail(idxs), Base.tail(ranges))...)
+@inline bringwithin(idxs::Tuple, ranges::Tuple) = bringwithin.(idxs, ranges)
 
 @inline bringwithin(idxs::Tuple{}, ranges::Tuple{}) = ()
 
