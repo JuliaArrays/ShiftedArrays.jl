@@ -79,6 +79,7 @@ offset(offsets::NTuple{N,Int}, inds::NTuple{N,Int}) where {N} = map(-, inds, off
 @inline function getindex(s::ShiftedArray{<:Any, <:Any, N}, x::Vararg{Int, N}) where {N}
     i = offset(shifts(s), x)
     v = parent(s)
+    @boundscheck checkbounds(v, x...) # to enforce the original size boundaries
     if checkbounds(Bool, v, i...)
         @inbounds ret = v[i...]
     else
