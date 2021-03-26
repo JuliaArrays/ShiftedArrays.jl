@@ -51,10 +51,10 @@ end
     sv[2] = 0
     @test collect(sv) == [3, 0, 4, 1]
     @test v == [1, 3, 0, 4]
-    sv[7] = 12
+    sv[3] = 12  # RH changed this behaviour
     @test collect(sv) == [3, 0, 12, 1]
     @test v == [1, 3, 0, 12]
-    @test checkbounds(Bool, sv, 123)
+    @test ~checkbounds(Bool, sv, 123)  # RH changed this behaviour
 end
 
 @testset "CircShiftedArray" begin
