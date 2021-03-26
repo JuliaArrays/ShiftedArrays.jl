@@ -13,7 +13,7 @@ using ShiftedArrays, Test
     svneg = ShiftedVector(v, -1, default = -100)
     @test default(svneg) == -100
     @test copy(svneg) == coalesce.(sv, -100)
-    @test isequal(sv[-3:3], Union{Int64, Missing}[missing, missing, missing, 1, 3, 5, 4])
+    @test isequal(sv[1:3], Union{Int64, Missing}[3, 5, 4])
 end
 
 @testset "ShiftedArray" begin
