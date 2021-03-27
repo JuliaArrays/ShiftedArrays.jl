@@ -23,7 +23,7 @@ end
 """
     fftshift(x [, dims])
 
-Result is semantically equivalent to `fftshift(A, dims)` but returns 
+Result is semantically equivalent to `AbstractFFTs.fftshift(A, dims)` but returns 
 a `CircShiftedArray` instead. 
 
 # Examples
@@ -52,7 +52,7 @@ end
 """
     ifftshift(A [, dims])
 
-Result is semantically equivalent to `ifftshift(A, dims)` but returns 
+Result is semantically equivalent to `AbstractFFTs.ifftshift(A, dims)` but returns 
 a `CircShiftedArray` instead. 
 
 # Examples

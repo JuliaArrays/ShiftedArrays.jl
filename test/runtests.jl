@@ -1,5 +1,5 @@
 using ShiftedArrays, Test
-using FFTW
+using AbstractFFTs 
 
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
