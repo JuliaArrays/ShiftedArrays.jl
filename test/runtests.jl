@@ -37,17 +37,12 @@ end
 
 @testset "bringwithin" begin
     @test ShiftedArrays.bringwithin(1, 1:10) == 1   
-    @test ShiftedArrays.bringwithin(11, 1:10) == 1   
-    @test ShiftedArrays.bringwithin(12, 1:10) == 2  
-    @test ShiftedArrays.bringwithin(0, 1:10) == 10 
-    @test ShiftedArrays.bringwithin(-1, 1:10) == 9  
-    @test ShiftedArrays.bringwithin((12, 13), axes(randn((3, 4)))) == (3, 1)
-    @test ShiftedArrays.bringwithin((-1, 13), axes(randn((3, 4)))) == (2, 1)
+    @test ShiftedArrays.bringwithin(0, 1:10) == 10   
+    @test ShiftedArrays.bringwithin(-1, 1:10) == 9 
     
     # test to check for offset axes
     @test ShiftedArrays.bringwithin(5, 5:10) == 5
     @test ShiftedArrays.bringwithin(4, 5:10) == 10
-    @test ShiftedArrays.bringwithin(11, 5:10) == 5
 end
 
 
@@ -59,7 +54,7 @@ end
     @test all(sv .== [3, 5, 4, 1])
     diff = v .- sv
     @test diff == [-2, -2, 1, 3]
-    @test shifts(sv) == (-1,)
+    @test shifts(sv) == (3,)
     sv2 = CircShiftedVector(v, 1)
     diff = v .- sv2
     @test copy(sv2) == [4, 1, 3, 5]
@@ -78,7 +73,7 @@ end
     sv = CircShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
-    @test shifts(sv) == (-2,0)
+    @test shifts(sv) == (2,0)
     @test isequal(sv, CircShiftedArray(v, -2))
     @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
     s = CircShiftedArray(v, (0, 2))

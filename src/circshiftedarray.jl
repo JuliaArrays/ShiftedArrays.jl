@@ -30,7 +30,11 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     shifts::NTuple{N, Int}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
         @assert all(step(x) == 1 for x in axes(p))
-        new{T, N, typeof(p)}(p, _padded_tuple(p, n))
+        # n could be a huge shift number, reduce it by taking the mod
+        # shift is also positive due to this mod
+        n_padded = _padded_tuple(p, n)
+        n = map((i, k) -> mod(i, length(k)), n_padded, axes(p))
+        new{T, N, typeof(p)}(p, n)
     end
 end
 
@@ -45,36 +49,20 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
 
-@inline function bringwithin(idx::Int, range::AbstractUnitRange)
-    t = mod(idx - first(range), length(range))
-    return first(range) + t 
+
+@inline function bringwithin(ind_with_offset::Int, ranges::AbstractUnitRange)
+    if ind_with_offset < first(ranges)
+        return ind_with_offset .- first(ranges) .+ 1 .+ last(ranges)
+    else
+        return ind_with_offset
+    end
 end
-
-@inline bringwithin(idxs::Tuple, ranges::Tuple) = map(bringwithin, idxs, ranges)
-
-"""
-    bringwithin(idx, idx2)
-
-Moves the indices or index in `idx` into the interval covered by `idx2`
-
-# Example
-```jldoctest
-julia> ShiftedArrays.bringwithin(1, 1:10)
-1
-
-julia> ShiftedArrays.bringwithin(-1, 1:10)
-9
-```
-"""
-bringwithin
 
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
     @boundscheck checkbounds(v, x...)
-    ind = offset(shifts(s), x)
-
-    i = bringwithin(ind, axes(v))
+    i = map((k1, k2, k3) -> bringwithin(k1 - k2, k3), x, shifts(s), axes(s))
     @inbounds ret = v[i...]
     ret
 end
@@ -82,8 +70,7 @@ end
 @inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
     @boundscheck checkbounds(v, x...)
-    ind = offset(shifts(s), x)
-    i = bringwithin(ind, axes(v))
+    i = map((k1, k2, k3) -> bringwithin(k1 - k2, k3), x, shifts(s), axes(s))
     @inbounds v[i...] = el
 end
 
