@@ -45,15 +45,12 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
 
-
-@inline function bringwithin(idx::Int, range::AbstractRange)
-    t = mod(idx - first(range), last(range))
+@inline function bringwithin(idx::Int, range::AbstractUnitRange)
+    t = mod(idx - first(range), length(range))
     return first(range) + t 
 end
 
-@inline bringwithin(idxs::Tuple, ranges::Tuple) = bringwithin.(idxs, ranges)
-
-@inline bringwithin(idxs::Tuple{}, ranges::Tuple{}) = ()
+@inline bringwithin(idxs::Tuple, ranges::Tuple) = map(bringwithin, idxs, ranges)
 
 """
     bringwithin(idx, idx2)
@@ -70,7 +67,6 @@ julia> ShiftedArrays.bringwithin(-1, 1:10)
 ```
 """
 bringwithin
-
 
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
@@ -99,6 +95,3 @@ parent(s::CircShiftedArray) = s.parent
 Returns amount by which `s` is shifted compared to `parent(s)`.
 """
 shifts(s::CircShiftedArray) = s.shifts
-
-# checkbounds(::CircShiftedArray, I...) = nothing
-# checkbounds(::Type{Bool}, ::CircShiftedArray, I...) = true

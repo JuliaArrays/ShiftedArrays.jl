@@ -43,6 +43,11 @@ end
     @test ShiftedArrays.bringwithin(-1, 1:10) == 9  
     @test ShiftedArrays.bringwithin((12, 13), axes(randn((3, 4)))) == (3, 1)
     @test ShiftedArrays.bringwithin((-1, 13), axes(randn((3, 4)))) == (2, 1)
+    
+    # test to check for offset axes
+    @test ShiftedArrays.bringwithin(5, 5:10) == 5
+    @test ShiftedArrays.bringwithin(4, 5:10) == 10
+    @test ShiftedArrays.bringwithin(11, 5:10) == 5
 end
 
 
@@ -65,7 +70,7 @@ end
     sv[3] = 12  # RH changed this behaviour
     @test collect(sv) == [3, 0, 12, 1]
     @test v == [1, 3, 0, 12]
-    @test ~checkbounds(Bool, sv, 123)  # RH changed this behaviour
+    @test !checkbounds(Bool, sv, 123)  # RH changed this behaviour
 end
 
 @testset "CircShiftedArray" begin
