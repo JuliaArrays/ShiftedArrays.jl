@@ -23,6 +23,7 @@ ShiftedArrays.circshift
 ShiftedArrays.fftshift
 ShiftedArrays.ifftshift
 ```
+
 ## Accessor functions
 
 ```@docs

@@ -86,7 +86,7 @@ end
         @test fftshift(x, dims) == ShiftedArrays.fftshift(x, dims)
         @test ifftshift(x, dims) == ShiftedArrays.ifftshift(x, dims)
     end
-    
+
     test_fftshift(randn((10,)))
     test_fftshift(randn((11,)))
     test_fftshift(randn((10,)), (1,))
@@ -95,11 +95,10 @@ end
     test_fftshift(randn((10, 11)), (2,))
     test_fftshift(randn(ComplexF32,(10, 11)), (1,2))
     test_fftshift(randn((10, 11)))
-    
+
     test_fftshift(randn((10, 11, 12, 13)), (2,4))
     test_fftshift(randn((10, 11, 12, 13)), (5))
     test_fftshift(randn((10, 11, 12, 13)))
-   
 
     @test (2, 2, 0) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2)) # Fourier center is at (2, 3, 0)
     @test (2, 2, 3) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2, 3)) # Fourier center is at (2, 3, 4)
