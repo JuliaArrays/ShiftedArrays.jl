@@ -27,6 +27,10 @@ julia> copy(s)
 """
 struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::S
+    # shift stores the circshift but is modified with mod (see below) to be more efficient
+    # in the getindex method
+    # negative shifts (left shift) are converted to positive (right shifts) with a larger
+    # shift number
     shifts::NTuple{N, Int}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
         @assert all(step(x) == 1 for x in axes(p))
