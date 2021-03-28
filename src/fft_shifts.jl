@@ -13,11 +13,11 @@ julia> ShiftedArrays.ft_center_diff((4,5, 6), (1,2)) # Fourier center is at (2,3
 julia> ShiftedArrays.ft_center_diff((4,5, 6), (1,2,3)) # Fourier center is at (2,3,4)
 (2, 2, 3)
 ```
-
 """
 function ft_center_diff(s::NTuple{N, T}, dims=ntuple(identity, Val(N))) where {N, T}
     return ntuple(i -> i ∈ dims ?  s[i] ÷ 2 : 0 , N)
 end
+
 """
     fftshift(x [, dims])
 
@@ -71,7 +71,6 @@ julia> ShiftedArrays.ifftshift([0 1 0; 0 0 0; 0 0 0], (2,))
  0  0  0
  0  0  0
 ```
-
 """
 function ifftshift(x::AbstractArray{T, N}, dims=ntuple(identity, Val(N))) where {T, N}
     ShiftedArrays.circshift(x, .-(ft_center_diff(size(x), dims)))
