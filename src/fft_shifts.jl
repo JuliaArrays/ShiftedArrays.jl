@@ -3,7 +3,7 @@
 
 Calculates how much the entries in each dimension must be shifted so that the
 center frequency is at the Fourier center.
-This function is internally used by `ShiftedArrays.fftshift` and `ShiftedArrays.ifftshift`
+This function is internally used by `ShiftedArrays.fftshift` and `ShiftedArrays.ifftshift`.
 
 # Examples
 ```jldoctest
@@ -18,8 +18,6 @@ julia> ShiftedArrays.ft_center_diff((4,5, 6), (1,2,3)) # Fourier center is at (2
 function ft_center_diff(s::NTuple{N, T}, dims=ntuple(identity, Val(N))) where {N, T}
     return ntuple(i -> i ∈ dims ?  s[i] ÷ 2 : 0 , N)
 end
-
-
 """
     fftshift(x [, dims])
 

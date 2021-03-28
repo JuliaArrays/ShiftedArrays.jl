@@ -101,12 +101,9 @@ end
     test_fftshift(randn((10, 11, 12, 13)))
    
 
-    @test (2,2, 0) == ShiftedArrays.ft_center_diff((4,5, 6), (1,2)) # Fourier center is at (2,3,0)
-    @test (2,2,3) == ShiftedArrays.ft_center_diff((4,5, 6), (1,2,3)) # Fourier center is at (2,3,4)
+    @test (2, 2, 0) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2)) # Fourier center is at (2, 3, 0)
+    @test (2, 2, 3) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2, 3)) # Fourier center is at (2, 3, 4)
 end
-
-
-
 @testset "laglead" begin
     v = [1, 3, 8, 12]
     diff = v .- lag(v)
