@@ -6,6 +6,7 @@ center frequency is at the Fourier center.
 This function is internally used by `ShiftedArrays.fftshift` and `ShiftedArrays.ifftshift`.
 
 # Examples
+
 ```jldoctest
 julia> ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2)) # Fourier center is at (2, 3, 0)
 (2, 2, 0)
@@ -25,6 +26,7 @@ Result is semantically equivalent to `AbstractFFTs.fftshift(A, dims)` but return
 a `CircShiftedArray` instead. 
 
 # Examples
+
 ```jldoctest
 julia> ShiftedArrays.fftshift([1 0 0 0])
 1×4 CircShiftedArray{Int64, 2, Matrix{Int64}}:
@@ -54,6 +56,7 @@ Result is semantically equivalent to `AbstractFFTs.ifftshift(A, dims)` but retur
 a `CircShiftedArray` instead. 
 
 # Examples
+
 ```jldoctest
 julia> ShiftedArrays.ifftshift([0 0 1 0])
 1×4 CircShiftedArray{Int64, 2, Matrix{Int64}}:
