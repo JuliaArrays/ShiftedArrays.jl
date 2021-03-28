@@ -1,4 +1,5 @@
 using ShiftedArrays, Test
+using AbstractFFTs 
 
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
@@ -77,6 +78,29 @@ end
     @test all(circshift(v, (1, -1)) .== ShiftedArrays.circshift(v, (1, -1)))
     @test all(circshift(v, (1,)) .== ShiftedArrays.circshift(v, (1,)))
     @test all(circshift(v, 3) .== ShiftedArrays.circshift(v, 3))
+end
+
+@testset "fftshift and ifftshift" begin
+    function test_fftshift(x, dims=1:ndims(x))
+        @test fftshift(x, dims) == ShiftedArrays.fftshift(x, dims)
+        @test ifftshift(x, dims) == ShiftedArrays.ifftshift(x, dims)
+    end
+
+    test_fftshift(randn((10,)))
+    test_fftshift(randn((11,)))
+    test_fftshift(randn((10,)), (1,))
+    test_fftshift(randn(ComplexF32, (11,)), (1,))
+    test_fftshift(randn((10, 11)), (1,))
+    test_fftshift(randn((10, 11)), (2,))
+    test_fftshift(randn(ComplexF32,(10, 11)), (1,2))
+    test_fftshift(randn((10, 11)))
+
+    test_fftshift(randn((10, 11, 12, 13)), (2,4))
+    test_fftshift(randn((10, 11, 12, 13)), (5))
+    test_fftshift(randn((10, 11, 12, 13)))
+
+    @test (2, 2, 0) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2)) # Fourier center is at (2, 3, 0)
+    @test (2, 2, 3) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2, 3)) # Fourier center is at (2, 3, 4)
 end
 
 @testset "laglead" begin
