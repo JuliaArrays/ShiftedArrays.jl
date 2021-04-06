@@ -45,7 +45,6 @@ end
     @test ShiftedArrays.bringwithin(4, 5:10) == 10
 end
 
-
 @testset "CircShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = CircShiftedVector(v, -1)
@@ -62,10 +61,10 @@ end
     sv[2] = 0
     @test collect(sv) == [3, 0, 4, 1]
     @test v == [1, 3, 0, 4]
-    sv[3] = 12  # RH changed this behaviour
+    sv[3] = 12 
     @test collect(sv) == [3, 0, 12, 1]
     @test v == [1, 3, 0, 12]
-    @test !checkbounds(Bool, sv, 123)  # RH changed this behaviour
+    @test !checkbounds(Bool, sv, 123)
 end
 
 @testset "CircShiftedArray" begin
@@ -73,7 +72,7 @@ end
     sv = CircShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
-    @test shifts(sv) == (2,0)
+    @test shifts(sv) == (2, 0)
     @test isequal(sv, CircShiftedArray(v, -2))
     @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
     s = CircShiftedArray(v, (0, 2))
