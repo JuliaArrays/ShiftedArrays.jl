@@ -92,10 +92,10 @@ end
     test_fftshift(randn(ComplexF32, (11,)), (1,))
     test_fftshift(randn((10, 11)), (1,))
     test_fftshift(randn((10, 11)), (2,))
-    test_fftshift(randn(ComplexF32,(10, 11)), (1,2))
+    test_fftshift(randn(ComplexF32,(10, 11)), (1, 2))
     test_fftshift(randn((10, 11)))
 
-    test_fftshift(randn((10, 11, 12, 13)), (2,4))
+    test_fftshift(randn((10, 11, 12, 13)), (2, 4))
     test_fftshift(randn((10, 11, 12, 13)), (5))
     test_fftshift(randn((10, 11, 12, 13)))
 
