@@ -2,7 +2,8 @@
     CircShiftedArray(parent::AbstractArray, shifts)
 
 Custom `AbstractArray` object to store an `AbstractArray` `parent` circularly shifted by `shifts` steps (where `shifts` is
-a `Tuple` with one `shift` value per dimension of `parent`).
+a `Tuple` with one `shift` value per dimension of `parent`). Note that `shift` is modified with a modulo operation and does
+not store the passed value but instead a positive number which leads to an equivalent shift.
 Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
 
 # Examples
@@ -36,8 +37,7 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
         @assert all(step(x) == 1 for x in axes(p))
         # n could be a huge shift number, reduce it by taking the mod
         # shift is also positive due to this mod
-        n_padded = _padded_tuple(p, n)
-        n = map((i, k) -> mod(i, length(k)), n_padded, axes(p))
+        n = map(mod, _padded_tuple(p, n), size(p))
         new{T, N, typeof(p)}(p, n)
     end
 end
@@ -53,20 +53,15 @@ CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
 
-
 @inline function bringwithin(ind_with_offset::Int, ranges::AbstractUnitRange)
-    if ind_with_offset < first(ranges)
-        return ind_with_offset .- first(ranges) .+ 1 .+ last(ranges)
-    else
-        return ind_with_offset
-    end
+    return ifelse(ind_with_offset < first(ranges), ind_with_offset + length(ranges), ind_with_offset)
 end
-
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
     @boundscheck checkbounds(v, x...)
-    i = map((k1, k2, k3) -> bringwithin(k1 - k2, k3), x, shifts(s), axes(s))
+    ind = offset(shifts(s), x)
+    i = map(bringwithin, ind, axes(s))
     @inbounds ret = v[i...]
     ret
 end
@@ -74,7 +69,8 @@ end
 @inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
     v = parent(s)
     @boundscheck checkbounds(v, x...)
-    i = map((k1, k2, k3) -> bringwithin(k1 - k2, k3), x, shifts(s), axes(s))
+    ind = offset(shifts(s), x)
+    i = map(bringwithin, ind, axes(s))
     @inbounds v[i...] = el
 end
 
