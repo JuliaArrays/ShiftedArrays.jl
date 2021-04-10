@@ -17,6 +17,13 @@ lead
 ShiftedArrays.circshift
 ```
 
+## FFT shifts
+
+```@docs
+ShiftedArrays.fftshift
+ShiftedArrays.ifftshift
+```
+
 ## Accessor functions
 
 ```@docs
