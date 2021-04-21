@@ -14,7 +14,7 @@ using AbstractFFTs
     svneg = ShiftedVector(v, -1, default = -100)
     @test default(svneg) == -100
     @test copy(svneg) == coalesce.(sv, -100)
-    @test isequal(sv[-3:3], Union{Int64, Missing}[missing, missing, missing, 1, 3, 5, 4])
+    @test isequal(sv[1:3], Union{Int64, Missing}[3, 5, 4])
 end
 
 @testset "ShiftedArray" begin
@@ -36,6 +36,16 @@ end
     @test checkbounds(Bool, sv, 123, 123)
 end
 
+@testset "bringwithin" begin
+    @test ShiftedArrays.bringwithin(1, 1:10) == 1   
+    @test ShiftedArrays.bringwithin(0, 1:10) == 10   
+    @test ShiftedArrays.bringwithin(-1, 1:10) == 9 
+    
+    # test to check for offset axes
+    @test ShiftedArrays.bringwithin(5, 5:10) == 5
+    @test ShiftedArrays.bringwithin(4, 5:10) == 10
+end
+
 @testset "CircShiftedVector" begin
     v = [1, 3, 5, 4]
     sv = CircShiftedVector(v, -1)
@@ -44,7 +54,7 @@ end
     @test all(sv .== [3, 5, 4, 1])
     diff = v .- sv
     @test diff == [-2, -2, 1, 3]
-    @test shifts(sv) == (-1,)
+    @test shifts(sv) == (3,)
     sv2 = CircShiftedVector(v, 1)
     diff = v .- sv2
     @test copy(sv2) == [4, 1, 3, 5]
@@ -52,10 +62,10 @@ end
     sv[2] = 0
     @test collect(sv) == [3, 0, 4, 1]
     @test v == [1, 3, 0, 4]
-    sv[7] = 12
+    sv[3] = 12 
     @test collect(sv) == [3, 0, 12, 1]
     @test v == [1, 3, 0, 12]
-    @test checkbounds(Bool, sv, 123)
+    @test !checkbounds(Bool, sv, 123)
 end
 
 @testset "CircShiftedArray" begin
@@ -63,7 +73,7 @@ end
     sv = CircShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
-    @test shifts(sv) == (-2,0)
+    @test shifts(sv) == (2, 0)
     @test isequal(sv, CircShiftedArray(v, -2))
     @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
     s = CircShiftedArray(v, (0, 2))
