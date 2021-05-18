@@ -74,6 +74,6 @@ parent(s::CircShiftedArray) = s.parent
 """
     shifts(s::CircShiftedArray)
 
-Returns amount by which `s` is shifted compared to `parent(s)`.
+Return amount by which `s` is shifted compared to `parent(s)`.
 """
 shifts(s::CircShiftedArray) = s.shifts

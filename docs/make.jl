@@ -6,11 +6,14 @@ makedocs(
     # options
     modules = [ShiftedArrays],
     sitename = "ShiftedArrays.jl",
-    format = Documenter.HTML(),
+    format = Documenter.HTML(;
+        prettyurls = get(ENV, "CI", "false") == "true",
+    ),
     pages = Any[
         "Introduction" => "index.md",
         "API" => "api.md",
-    ]
+    ],
+    strict = true,
 )
 
 # Deploy built documentation from Travis.

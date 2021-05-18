@@ -93,14 +93,14 @@ parent(s::ShiftedArray) = s.parent
 """
     shifts(s::ShiftedArray)
 
-Returns amount by which `s` is shifted compared to `parent(s)`.
+Return amount by which `s` is shifted compared to `parent(s)`.
 """
 shifts(s::ShiftedArray) = s.shifts
 
 """
     default(s::ShiftedArray)
 
-Returns default value.
+Return default value.
 """
 default(s::ShiftedArray) = s.default
 
