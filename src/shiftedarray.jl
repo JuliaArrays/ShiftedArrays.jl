@@ -1,6 +1,5 @@
-_padded_tuple(v::AbstractArray{T, N}, n::NTuple{N, Int}) where {T, N} = n
-_padded_tuple(v::AbstractArray{T, N}, n::Int) where {T, N} = _padded_tuple(v, (n,))
-_padded_tuple(v::AbstractArray{T, N}, n) where {T, N} = Tuple(i <= length(n) ? n[i] : 0 for i in 1:N)
+_padded_tuple(v::AbstractArray, n::Int) = _padded_tuple(v, (n,))
+_padded_tuple(v::AbstractArray, n) = ntuple(i -> i ≤ length(n) ? n[i] : 0, ndims(v))
 
 """
     ShiftedArray(parent::AbstractArray, shifts, default)
