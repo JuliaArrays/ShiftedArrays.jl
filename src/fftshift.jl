@@ -1,9 +1,10 @@
 """
     ft_center_diff(s [, dims])
 
-Calculates how much the entries in each dimension must be shifted so that the
-center frequency is at the Fourier center.
-This function is internally used by `ShiftedArrays.fftshift` and `ShiftedArrays.ifftshift`.
+Return the shifts required to center dimensions `dims` at the respective
+Fourier centers.
+This function is internally used by [`ShiftedArrays.fftshift`](@ref) and
+[`ShiftedArrays.ifftshift`](@ref).
 
 # Examples
 
@@ -16,14 +17,15 @@ julia> ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2, 3)) # Fourier center is at
 ```
 """
 function ft_center_diff(s::NTuple{N, T}, dims=ntuple(identity, Val(N))) where {N, T}
-    return ntuple(i -> i ∈ dims ?  s[i] ÷ 2 : 0 , N)
+    return ntuple(i -> i ∈ dims ?  s[i] ÷ 2 : 0, N)
 end
 
 """
     fftshift(x [, dims])
 
-Result is semantically equivalent to `AbstractFFTs.fftshift(A, dims)` but returns 
-a `CircShiftedArray` instead. 
+Lazy version of `AbstractFFTs.fftshift(x, dims)`. Return a `CircShiftedArray`
+where each given dimension is shifted by `N÷2`, where `N` is the size of
+that dimension.
 
 # Examples
 
@@ -50,10 +52,11 @@ function fftshift(x::AbstractArray{T, N}, dims=ntuple(identity, Val(N))) where {
 end
 
 """
-    ifftshift(A [, dims])
+    ifftshift(x [, dims])
 
-Result is semantically equivalent to `AbstractFFTs.ifftshift(A, dims)` but returns 
-a `CircShiftedArray` instead. 
+Lazy version of `AbstractFFTs.ifftshift(x, dims)`. Return a `CircShiftedArray`
+where each given dimension is shifted by `-N÷2`, where `N` is the size of
+that dimension.
 
 # Examples
 
