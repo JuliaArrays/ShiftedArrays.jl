@@ -12,14 +12,14 @@ Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
 julia> v = [1, 3, 5, 4];
 
 julia> s = CircShiftedArray(v, (1,))
-4-element CircShiftedArray{Int64,1,Array{Int64,1}}:
+4-element CircShiftedVector{Int64, Vector{Int64}}:
  4
  1
  3
  5
 
 julia> copy(s)
-4-element Array{Int64,1}:
+4-element Vector{Int64}:
  4
  1
  3
