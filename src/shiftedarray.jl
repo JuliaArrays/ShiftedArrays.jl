@@ -9,13 +9,13 @@ from `s`, the remaining entries are `0`. `s` should be an integer, in which case
 # Examples
 
 ```jldoctest padded_tuple
-julia> ShiftedArrays.padded_tuple(rand(2, 2), 3)
+julia> ShiftedArrays.padded_tuple(rand(10, 10), 3)
 (3, 0)
 
-julia> ShiftedArrays.padded_tuple(rand(2, 2), (4,))
+julia> ShiftedArrays.padded_tuple(rand(10, 10), (4,))
 (4, 0)
 
-julia> ShiftedArrays.padded_tuple(rand(2, 2), (1, 5))
+julia> ShiftedArrays.padded_tuple(rand(10, 10), (1, 5))
 (1, 5)
 ```
 """
