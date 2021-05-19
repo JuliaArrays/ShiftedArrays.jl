@@ -3,5 +3,5 @@
 *.jl.mem
 deps/already_showed
 *play.jl
-Manifest.toml
+/Manifest.toml
 docs/build

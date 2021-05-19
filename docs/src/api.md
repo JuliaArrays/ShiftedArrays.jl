@@ -22,6 +22,7 @@ ShiftedArrays.circshift
 ```@docs
 ShiftedArrays.fftshift
 ShiftedArrays.ifftshift
+ShiftedArrays.ft_center_diff
 ```
 
 ## Accessor functions
