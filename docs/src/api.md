@@ -22,7 +22,6 @@ ShiftedArrays.circshift
 ```@docs
 ShiftedArrays.fftshift
 ShiftedArrays.ifftshift
-ShiftedArrays.ft_center_diff
 ```
 
 ## Accessor functions
@@ -30,4 +29,11 @@ ShiftedArrays.ft_center_diff
 ```@docs
 shifts
 default
+```
+
+## Internals
+
+```@docs
+ShiftedArrays.padded_tuple
+ShiftedArrays.ft_center_diff
 ```

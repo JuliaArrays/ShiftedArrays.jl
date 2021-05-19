@@ -32,7 +32,7 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     shifts::NTuple{N, Int}
     function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
         @assert all(step(x) == 1 for x in axes(p))
-        n = map(mod, _padded_tuple(p, n), size(p))
+        n = map(mod, padded_tuple(p, n), size(p))
         new{T, N, typeof(p)}(p, n)
     end
 end

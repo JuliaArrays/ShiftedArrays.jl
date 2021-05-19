@@ -36,6 +36,14 @@ end
     @test checkbounds(Bool, sv, 123, 123)
 end
 
+@testset "padded_tuple" begin
+    v = rand(2, 2)
+    @test (1, 0) == @inferred ShiftedArrays.padded_tuple(v, 1)
+    @test (0, 0) == @inferred ShiftedArrays.padded_tuple(v, ())
+    @test (3, 0) == @inferred ShiftedArrays.padded_tuple(v, (3,))
+    @test (1, 5) == @inferred ShiftedArrays.padded_tuple(v, (1, 5))
+end
+
 @testset "bringwithin" begin
     @test ShiftedArrays.bringwithin(1, 1:10) == 1   
     @test ShiftedArrays.bringwithin(0, 1:10) == 10   

@@ -1,6 +1,25 @@
-_padded_tuple(v::AbstractArray{T, N}, n::NTuple{N, Int}) where {T, N} = n
-_padded_tuple(v::AbstractArray{T, N}, n::Int) where {T, N} = _padded_tuple(v, (n,))
-_padded_tuple(v::AbstractArray{T, N}, n) where {T, N} = Tuple(i <= length(n) ? n[i] : 0 for i in 1:N)
+"""
+    padded_tuple(v::AbstractVector, s)
+
+Internal function used to compute shifts. Return a `Tuple` with as many element
+as the dimensions of `v`. The first `length(s)` entries are filled with values
+from `s`, the remaining entries are `0`. `s` should be an integer, in which case
+`length(s) == 1`, or a container of integers with keys `1:length(s)`.
+
+# Examples
+
+```jldoctest padded_tuple
+julia> ShiftedArrays.padded_tuple(rand(10, 10), 3)
+(3, 0)
+
+julia> ShiftedArrays.padded_tuple(rand(10, 10), (4,))
+(4, 0)
+
+julia> ShiftedArrays.padded_tuple(rand(10, 10), (1, 5))
+(1, 5)
+```
+"""
+padded_tuple(v::AbstractArray, s) = ntuple(i -> i ≤ length(s) ? s[i] : 0, ndims(v))
 
 """
     ShiftedArray(parent::AbstractArray, shifts, default)
@@ -60,7 +79,7 @@ struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
 end
 
 ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N); default::M = missing) where {T, N, M} =
-     ShiftedArray{T, M, N, typeof(v)}(v, _padded_tuple(v, n), default)
+     ShiftedArray{T, M, N, typeof(v)}(v, padded_tuple(v, n), default)
 
 """
     ShiftedVector{T, S<:AbstractArray}
