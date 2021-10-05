@@ -97,3 +97,49 @@ julia> s = lead(v, (0, 2))
 ```
 """
 lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); default = default)
+
+
+"""
+    ShiftedArrays.diff(v::AbstractArray, n = 1; default = missing)
+
+Return a freshly allocated array of the differences between elements
+in the array. The second argument gives the amount to shift in each dimension.
+If it is an integer, it is assumed to refer to the first dimension.
+`default` specifies a default value when you are out of bounds.
+
+## Examples
+
+```jldoctest diff
+julia> v = [1, 3, 5, 4];
+
+julia> ShiftedArrays.diff(v)
+4-element Vector{Union{Missing, Int64}}:
+   missing
+  2
+  2
+ -1
+
+julia> w = 1:2:9
+1:2:9
+
+julia> s = ShiftedArrays.diff(w, 2)
+5-element Vector{Union{Missing, Int64}}:
+  missing
+  missing
+ 4
+ 4
+ 4
+
+julia> v = reshape(1:16, 4, 4);
+
+julia> s = ShiftedArrays.diff(v, (0, 2))
+4×4 Matrix{Union{Missing, Int64}}:
+ missing  missing  8  8
+ missing  missing  8  8
+ missing  missing  8  8
+ missing  missing  8  8
+"""
+function diff(v::AbstractArray, n = 1; default = missing)
+  l = lag(v, n; default = default)
+  v .- l
+end

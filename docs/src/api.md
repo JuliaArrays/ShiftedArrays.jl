@@ -15,6 +15,7 @@ CircShiftedVector
 lag
 lead
 ShiftedArrays.circshift
+ShiftedArrays.diff
 ```
 
 ## FFT shifts

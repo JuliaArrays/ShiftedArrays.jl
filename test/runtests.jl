@@ -126,8 +126,12 @@ end
     diff = v .- lag(v)
     @test isequal(diff, [missing, 2, 5, 4])
 
+    @test isequal(diff, ShiftedArrays.diff(v))
+
     diff2 = v .- lag(v, 2)
     @test isequal(diff2, [missing, missing, 7, 9])
+
+    @test isequal(diff2, ShiftedArrays.diff(v))
 
     @test all(lag(v, 2, default = -100) .== coalesce.(lag(v, 2), -100))
 

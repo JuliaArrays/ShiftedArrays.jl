@@ -4,6 +4,7 @@ import Base: checkbounds, getindex, setindex!, parent, size
 export ShiftedArray, ShiftedVector, shifts, default
 export CircShiftedArray, CircShiftedVector
 export lag, lead
+# ShiftedArrays.diff unexported due to collision
 
 include("shiftedarray.jl")
 include("circshiftedarray.jl")
