@@ -77,8 +77,8 @@ end
     @test v == [1, 3, 0, 4]
     sv[3] = 12 
     @test collect(sv) == [3, 0, 12, 1]
-    @test sv === setindex!(sv, 12, 3) 
     @test v == [1, 3, 0, 12]
+    @test sv === setindex!(sv, 12, 3) 
     @test checkbounds(Bool, sv, 2)
     @test !checkbounds(Bool, sv, 123)
 end
