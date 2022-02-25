@@ -3,6 +3,7 @@ using AbstractFFTs
 
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
+    @test all(v .== ShiftedVector(v))
     sv = ShiftedVector(v, -1)
     @test isequal(sv, ShiftedVector(v, (-1,)))
     @test length(sv) == 4
@@ -19,6 +20,7 @@ end
 
 @testset "ShiftedArray" begin
     v = reshape(1:16, 4, 4)
+    @test all(v .== ShiftedArray(v))
     sv = ShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
@@ -58,6 +60,7 @@ end
 
 @testset "CircShiftedVector" begin
     v = [1, 3, 5, 4]
+    @test all(v .== CircShiftedVector(v))
     sv = CircShiftedVector(v, -1)
     @test isequal(sv, CircShiftedVector(v, (-1,)))
     @test length(sv) == 4
@@ -68,7 +71,7 @@ end
     sv2 = CircShiftedVector(v, 1)
     diff = v .- sv2
     @test copy(sv2) == [4, 1, 3, 5]
-    @test all(CircShiftedVector(v, 1) .== circshift(v,1))
+    @test all(CircShiftedVector(v, 1) .== circshift(v, 1))
     sv[2] = 0
     @test collect(sv) == [3, 0, 4, 1]
     @test v == [1, 3, 0, 4]
@@ -81,6 +84,7 @@ end
 
 @testset "CircShiftedArray" begin
     v = reshape(1:16, 4, 4)
+    @test all(v .== CircShiftedArray(v))
     sv = CircShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
