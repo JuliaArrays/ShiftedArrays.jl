@@ -78,7 +78,7 @@ struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
     default::M
 end
 
-ShiftedArray(v::AbstractArray{T, N}, n = Tuple(0 for i in 1:N); default::M = missing) where {T, N, M} =
+ShiftedArray(v::AbstractArray{T, N}, n = (); default::M = missing) where {T, N, M} =
      ShiftedArray{T, M, N, typeof(v)}(v, padded_tuple(v, n), default)
 
 """
@@ -91,20 +91,19 @@ const ShiftedVector{T, M, S<:AbstractArray} = ShiftedArray{T, M, 1, S}
 ShiftedVector(v::AbstractVector, n = (0,); default = missing) = ShiftedArray(v, n; default = default)
 
 size(s::ShiftedArray) = size(parent(s))
+axes(s::ShiftedArray) = axes(parent(s))
 
 # Computing a shifted index (subtracting the offset)
 offset(offsets::NTuple{N,Int}, inds::NTuple{N,Int}) where {N} = map(-, inds, offsets)
 
 @inline function getindex(s::ShiftedArray{<:Any, <:Any, N}, x::Vararg{Int, N}) where {N}
-    i = offset(shifts(s), x)
-    v = parent(s)
-    @boundscheck checkbounds(v, x...) # to enforce the original size boundaries
-    if checkbounds(Bool, v, i...)
-        @inbounds ret = v[i...]
+    @boundscheck checkbounds(s, x...)
+    v, i = parent(s), offset(shifts(s), x)
+    return if checkbounds(Bool, v, i...)
+        @inbounds v[i...]
     else
-        ret = default(s)
+        default(s)
     end
-    ret
 end
 
 parent(s::ShiftedArray) = s.parent
@@ -122,6 +121,3 @@ shifts(s::ShiftedArray) = s.shifts
 Return default value.
 """
 default(s::ShiftedArray) = s.default
-
-checkbounds(::ShiftedArray, I...) = nothing
-checkbounds(::Type{Bool}, ::ShiftedArray, I...) = true
