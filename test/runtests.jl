@@ -24,7 +24,7 @@ end
     sv = ShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
-    @test ismissing(sv[3,3])
+    @test ismissing(sv[3, 3])
     @test shifts(sv) == (-2,0)
     @test isequal(sv, ShiftedArray(v, -2))
     @test isequal(@inferred(ShiftedArray(v, (2,))), @inferred(ShiftedArray(v, 2)))
@@ -77,6 +77,7 @@ end
     @test v == [1, 3, 0, 4]
     sv[3] = 12 
     @test collect(sv) == [3, 0, 12, 1]
+    @test sv === setindex!(sv, 12, 3) 
     @test v == [1, 3, 0, 12]
     @test checkbounds(Bool, sv, 2)
     @test !checkbounds(Bool, sv, 123)
