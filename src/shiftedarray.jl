@@ -88,7 +88,7 @@ Shorthand for `ShiftedArray{T, 1, S}`.
 """
 const ShiftedVector{T, M, S<:AbstractArray} = ShiftedArray{T, M, 1, S}
 
-ShiftedVector(v::AbstractVector, n = (0,); default = missing) = ShiftedArray(v, n; default = default)
+ShiftedVector(v::AbstractVector, n = (); default = missing) = ShiftedArray(v, n; default = default)
 
 size(s::ShiftedArray) = size(parent(s))
 axes(s::ShiftedArray) = axes(parent(s))

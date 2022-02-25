@@ -43,7 +43,7 @@ Shorthand for `CircShiftedArray{T, 1, S}`.
 """
 const CircShiftedVector{T, S<:AbstractArray} = CircShiftedArray{T, 1, S}
 
-CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
+CircShiftedVector(v::AbstractVector, n = ()) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
 axes(s::CircShiftedArray) = axes(parent(s))
