@@ -1,9 +1,10 @@
 """
     CircShiftedArray(parent::AbstractArray, shifts)
 
-Custom `AbstractArray` object to store an `AbstractArray` `parent` circularly shifted by `shifts` steps (where `shifts` is
-a `Tuple` with one `shift` value per dimension of `parent`). Note that `shift` is modified with a modulo operation and does
-not store the passed value but instead a positive number which leads to an equivalent shift.
+Custom `AbstractArray` object to store an `AbstractArray` `parent` circularly shifted
+by `shifts` steps (where `shifts` is a `Tuple` with one `shift` value per dimension of `parent`).
+Note that `shift` is modified with a modulo operation and does not store the passed value
+but instead a positive number which leads to an equivalent shift.
 Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
 
 # Examples
@@ -34,6 +35,11 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
         shifts = map(mod, padded_tuple(p, n), size(p))
         return new{T, N, typeof(p)}(p, shifts)
     end
+end
+
+function CircShiftedArray(c::CircShiftedArray, n = ())
+    shifts = map(+, ShiftedArrays.shifts(c), padded_tuple(c, n))
+    return CircShiftedArray(parent(c), shifts)
 end
 
 """

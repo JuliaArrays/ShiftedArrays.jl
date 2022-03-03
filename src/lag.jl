@@ -46,7 +46,9 @@ julia> s = lag(v, (0, 2))
  missing  missing  4  8
 ```
 """
-lag(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, n; default = default)
+function lag(v::AbstractArray, n = 1; default = ShiftedArrays.default(v))
+    return ShiftedArray(v, n; default = default)
+end
 
 """
     lead(v::AbstractArray, n = 1; default = missing)
@@ -96,4 +98,6 @@ julia> s = lead(v, (0, 2))
  12  16  missing  missing
 ```
 """
-lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); default = default)
+function lead(v::AbstractArray, n = 1; default = ShiftedArrays.default(v))
+    return ShiftedArray(v, map(-, n); default = default)
+end

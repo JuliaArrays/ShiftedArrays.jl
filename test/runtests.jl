@@ -16,6 +16,14 @@ using AbstractFFTs
     @test default(svneg) == -100
     @test copy(svneg) == coalesce.(sv, -100)
     @test isequal(sv[1:3], Union{Int64, Missing}[3, 5, 4])
+    svnest = ShiftedVector(ShiftedVector(v, 1), 2)
+    sv = ShiftedVector(v, 3)
+    @test sv === svnest
+    sv = ShiftedVector(v, 2, default = nothing)
+    sv1 = ShiftedVector(sv, 1)
+    sv2 = ShiftedVector(sv, 1, default = 0)
+    @test isequal(collect(sv1), [nothing, nothing, nothing, 1])
+    @test isequal(collect(sv2), [0, nothing, nothing, 1])
 end
 
 @testset "ShiftedArray" begin
@@ -38,6 +46,20 @@ end
     @test all(sneg .== coalesce.(s, default(sneg)))
     @test checkbounds(Bool, sv, 2, 2)
     @test !checkbounds(Bool, sv, 123, 123)
+    svnest = ShiftedArray(ShiftedArray(v, (1, 1)), 2)
+    sv = ShiftedArray(v, (3, 1))
+    @test sv === svnest
+    sv = ShiftedArray(v, 2, default = nothing)
+    sv1 = ShiftedArray(sv, (1, 1))
+    sv2 = ShiftedArray(sv, (1, 1), default = 0)
+    @test isequal(collect(sv1), [nothing   nothing   nothing   nothing
+                                 nothing   nothing   nothing   nothing
+                                 nothing   nothing   nothing   nothing
+                                 nothing   1         5         9      ])
+    @test isequal(collect(sv2), [0   0         0         0
+                                 0   nothing   nothing   nothing
+                                 0   nothing   nothing   nothing
+                                 0   1         5         9      ])
 end
 
 @testset "padded_tuple" begin
@@ -81,6 +103,9 @@ end
     @test sv === setindex!(sv, 12, 3) 
     @test checkbounds(Bool, sv, 2)
     @test !checkbounds(Bool, sv, 123)
+    sv = CircShiftedArray(v, 3)
+    svnest = CircShiftedArray(CircShiftedArray(v, 2), 1)
+    @test sv === svnest
 end
 
 @testset "CircShiftedArray" begin
@@ -98,6 +123,9 @@ end
                                10 14 2 6;
                                11 15 3 7;
                                12 16 4 8])
+    sv = CircShiftedArray(v, 3)
+    svnest = CircShiftedArray(CircShiftedArray(v, 2), 1)
+    @test sv === svnest
 end
 
 @testset "circshift" begin
@@ -105,6 +133,9 @@ end
     @test all(circshift(v, (1, -1)) .== ShiftedArrays.circshift(v, (1, -1)))
     @test all(circshift(v, (1,)) .== ShiftedArrays.circshift(v, (1,)))
     @test all(circshift(v, 3) .== ShiftedArrays.circshift(v, 3))
+    sv = ShiftedArrays.circshift(v, 3)
+    svnest = ShiftedArrays.circshift(ShiftedArrays.circshift(v, 2), 1)
+    @test sv === svnest
 end
 
 @testset "fftshift and ifftshift" begin
@@ -147,4 +178,7 @@ end
     @test isequal(diff2, [-7, -9, missing, missing])
 
     @test all(lead(v, 2, default = -100) .== coalesce.(lead(v, 2), -100))
+
+    @test lag(lag(v, 1), 2) === lag(v, 3)
+    @test lead(lead(v, 1), 2) === lead(v, 3)
 end
