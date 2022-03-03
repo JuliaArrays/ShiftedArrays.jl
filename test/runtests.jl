@@ -3,6 +3,7 @@ using AbstractFFTs
 
 @testset "ShiftedVector" begin
     v = [1, 3, 5, 4]
+    @test all(v .== ShiftedVector(v))
     sv = ShiftedVector(v, -1)
     @test isequal(sv, ShiftedVector(v, (-1,)))
     @test length(sv) == 4
@@ -19,13 +20,15 @@ end
 
 @testset "ShiftedArray" begin
     v = reshape(1:16, 4, 4)
+    @test all(v .== ShiftedArray(v))
     sv = ShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
-    @test ismissing(sv[3,3])
+    @test ismissing(sv[3, 3])
     @test shifts(sv) == (-2,0)
     @test isequal(sv, ShiftedArray(v, -2))
-    @test isequal(ShiftedArray(v, (2,)), ShiftedArray(v, 2))
+    @test isequal(@inferred(ShiftedArray(v, (2,))), @inferred(ShiftedArray(v, 2)))
+    @test isequal(@inferred(ShiftedArray(v)), @inferred(ShiftedArray(v, (0, 0))))
     s = ShiftedArray(v, (0, -2))
     @test isequal(collect(s), [ 9 13 missing missing;
                                10 14 missing missing;
@@ -33,7 +36,8 @@ end
                                12 16 missing missing])
     sneg = ShiftedArray(v, (0, -2), default = -100)
     @test all(sneg .== coalesce.(s, default(sneg)))
-    @test checkbounds(Bool, sv, 123, 123)
+    @test checkbounds(Bool, sv, 2, 2)
+    @test !checkbounds(Bool, sv, 123, 123)
 end
 
 @testset "padded_tuple" begin
@@ -56,6 +60,7 @@ end
 
 @testset "CircShiftedVector" begin
     v = [1, 3, 5, 4]
+    @test all(v .== CircShiftedVector(v))
     sv = CircShiftedVector(v, -1)
     @test isequal(sv, CircShiftedVector(v, (-1,)))
     @test length(sv) == 4
@@ -66,24 +71,28 @@ end
     sv2 = CircShiftedVector(v, 1)
     diff = v .- sv2
     @test copy(sv2) == [4, 1, 3, 5]
-    @test all(CircShiftedVector(v, 1) .== circshift(v,1))
+    @test all(CircShiftedVector(v, 1) .== circshift(v, 1))
     sv[2] = 0
     @test collect(sv) == [3, 0, 4, 1]
     @test v == [1, 3, 0, 4]
     sv[3] = 12 
     @test collect(sv) == [3, 0, 12, 1]
     @test v == [1, 3, 0, 12]
+    @test sv === setindex!(sv, 12, 3) 
+    @test checkbounds(Bool, sv, 2)
     @test !checkbounds(Bool, sv, 123)
 end
 
 @testset "CircShiftedArray" begin
     v = reshape(1:16, 4, 4)
+    @test all(v .== CircShiftedArray(v))
     sv = CircShiftedArray(v, (-2, 0))
     @test length(sv) == 16
     @test sv[1, 3] == 11
     @test shifts(sv) == (2, 0)
     @test isequal(sv, CircShiftedArray(v, -2))
-    @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
+    @test isequal(@inferred(CircShiftedArray(v, 2)), @inferred(CircShiftedArray(v, (2,))))
+    @test isequal(@inferred(CircShiftedArray(v)), @inferred(CircShiftedArray(v, (0, 0))))
     s = CircShiftedArray(v, (0, 2))
     @test isequal(collect(s), [ 9 13 1 5;
                                10 14 2 6;

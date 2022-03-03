@@ -30,10 +30,9 @@ struct CircShiftedArray{T, N, S<:AbstractArray} <: AbstractArray{T, N}
     parent::S
     # the field `shifts` stores the circular shifts modulo the size of the parent array
     shifts::NTuple{N, Int}
-    function CircShiftedArray(p::AbstractArray{T, N}, n = Tuple(0 for i in 1:N)) where {T, N}
-        @assert all(step(x) == 1 for x in axes(p))
-        n = map(mod, padded_tuple(p, n), size(p))
-        new{T, N, typeof(p)}(p, n)
+    function CircShiftedArray(p::AbstractArray{T, N}, n = ()) where {T, N}
+        shifts = map(mod, padded_tuple(p, n), size(p))
+        return new{T, N, typeof(p)}(p, shifts)
     end
 end
 
@@ -44,29 +43,28 @@ Shorthand for `CircShiftedArray{T, 1, S}`.
 """
 const CircShiftedVector{T, S<:AbstractArray} = CircShiftedArray{T, 1, S}
 
-CircShiftedVector(v::AbstractVector, n = (0,)) = CircShiftedArray(v, n)
+CircShiftedVector(v::AbstractVector, n = ()) = CircShiftedArray(v, n)
 
 size(s::CircShiftedArray) = size(parent(s))
+axes(s::CircShiftedArray) = axes(parent(s))
 
 @inline function bringwithin(ind_with_offset::Int, ranges::AbstractUnitRange)
     return ifelse(ind_with_offset < first(ranges), ind_with_offset + length(ranges), ind_with_offset)
 end
 
 @inline function getindex(s::CircShiftedArray{T, N}, x::Vararg{Int, N}) where {T, N}
-    v = parent(s)
-    @boundscheck checkbounds(v, x...)
-    ind = offset(shifts(s), x)
+    @boundscheck checkbounds(s, x...)
+    v, ind = parent(s), offset(shifts(s), x)
     i = map(bringwithin, ind, axes(s))
-    @inbounds ret = v[i...]
-    ret
+    return @inbounds v[i...]
 end
 
 @inline function setindex!(s::CircShiftedArray{T, N}, el, x::Vararg{Int, N}) where {T, N}
-    v = parent(s)
-    @boundscheck checkbounds(v, x...)
-    ind = offset(shifts(s), x)
+    @boundscheck checkbounds(s, x...)
+    v, ind = parent(s), offset(shifts(s), x)
     i = map(bringwithin, ind, axes(s))
     @inbounds v[i...] = el
+    return s
 end
 
 parent(s::CircShiftedArray) = s.parent
