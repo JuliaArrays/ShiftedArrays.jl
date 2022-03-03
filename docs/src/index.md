@@ -87,7 +87,9 @@ julia> ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)[-2:3]
 
 ## Shifting the data
 
-Using the `ShiftedArray` type, this package provides two operations for lazily shifting vectors: `lag` and `lead`.
+Using the `ShiftedArray` type, this package provides two operations for lazily shifting arrays: `lag` and `lead`. It also provides
+the function `ShiftedArrays.diff` for calculating the differences
+between elements in arrays.
 
 ```julia
 julia> v = [1, 3, 5, 4];
@@ -125,6 +127,19 @@ julia> lead(v)
  5       
  4       
   missing
+```
+
+`diff` is an analogue for `v .- lag(v)`
+
+```julia
+julia> v = [1, 3, 5, 4];
+
+julia> ShiftedArrays.diff(v)
+4-element Vector{Union{Missing, Int64}}:
+   missing
+  2
+  2
+ -1
 ```
 
 ## Shifting the data circularly
