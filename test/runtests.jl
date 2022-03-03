@@ -55,11 +55,11 @@ end
     @test isequal(collect(sv1), [nothing   nothing   nothing   nothing
                                  nothing   nothing   nothing   nothing
                                  nothing   nothing   nothing   nothing
-                                 nothing   1         5         9      ])
-    @test isequal(collect(sv2), [0   0         0         0
+                                 nothing  1         5         9      ])
+    @test isequal(collect(sv2), [0  0         0         0
                                  0   nothing   nothing   nothing
                                  0   nothing   nothing   nothing
-                                 0   1         5         9      ])
+                                 0  1         5         9      ])
 end
 
 @testset "padded_tuple" begin
