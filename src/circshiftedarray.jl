@@ -3,9 +3,11 @@
 
 Custom `AbstractArray` object to store an `AbstractArray` `parent` circularly shifted
 by `shifts` steps (where `shifts` is a `Tuple` with one `shift` value per dimension of `parent`).
-Note that `shift` is modified with a modulo operation and does not store the passed value
-but instead a positive number which leads to an equivalent shift.
 Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
+
+!!! note
+    `shift` is modified with a modulo operation and does not store the passed value
+    but instead a nonnegative number which leads to an equivalent shift.
 
 !!! note
     If `parent` is itself a `CircShiftedArray`, the constructor does not nest
