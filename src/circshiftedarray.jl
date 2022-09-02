@@ -7,6 +7,10 @@ Note that `shift` is modified with a modulo operation and does not store the pas
 but instead a positive number which leads to an equivalent shift.
 Use `copy` to collect the values of a `CircShiftedArray` into a normal `Array`.
 
+!!! note
+    If `parent` is itself a `CircShiftedArray`, the constructor does not nest
+    `CircShiftedArray` objects but rather combines the shifts additively.
+
 # Examples
 
 ```jldoctest circshiftedarray

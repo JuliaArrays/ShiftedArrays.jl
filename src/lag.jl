@@ -1,9 +1,10 @@
 """
     lag(v::AbstractArray, n = 1; default = missing)
 
-Return a `ShiftedArray` object, with underlying data `v`. The second argument gives the amount
-to shift in each dimension. If it is an integer, it is assumed to refer to the first dimension.
-`default` specifies a default value when you are out of bounds.
+Return a `ShiftedArray` object which lazily represents the array `v` shifted by `n`.
+The second argument `n` specifies the amount to shift in each dimension.
+If it is an integer, it is assumed to refer to the first dimension.
+`default` specifies a default value to return when out of bounds in the original array.
 
 # Examples
 
@@ -53,9 +54,11 @@ end
 """
     lead(v::AbstractArray, n = 1; default = missing)
 
-Return a `ShiftedArray` object, with underlying data `v`. The second argument gives the amount
-to shift negatively in each dimension. If it is an integer, it is assumed to refer
-to the first dimension. `default` specifies a default value when you are out of bounds.
+Return a `ShiftedArray` object which lazily represents the array `v` shifted
+negatively by `n`.
+The second argument `n` specifies the amount to shift negatively in each dimension.
+If it is an integer, it is assumed to refer to the first dimension.
+`default` specifies a default value to return when out of bounds in the original array.
 
 # Examples
 

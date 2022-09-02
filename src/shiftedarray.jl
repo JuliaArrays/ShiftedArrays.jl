@@ -31,6 +31,11 @@ is a valid index for `s.parent`, and `s.v[i, ...] == default` otherwise.
 Use `copy` to collect the values of a `ShiftedArray` into a normal `Array`.
 The recommended constructor is `ShiftedArray(parent, shifts; default = missing)`.
 
+!!! note
+    If `parent` is itself a `ShiftedArray` with a compatible default value,
+    the constructor does not nest `ShiftedArray` objects but rather combines
+    the shifts additively.
+
 # Examples
 
 ```jldoctest shiftedarray
