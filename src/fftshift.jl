@@ -48,7 +48,7 @@ julia> ShiftedArrays.fftshift([1 0 0; 0 0 0; 0 0 0], (1,))
 ```
 """
 function fftshift(x::AbstractArray{T, N}, dims=ntuple(identity, Val(N))) where {T, N}
-    ShiftedArrays.circshift(x, ft_center_diff(size(x), dims))
+    return ShiftedArrays.circshift(x, ft_center_diff(size(x), dims))
 end
 
 """
@@ -79,5 +79,5 @@ julia> ShiftedArrays.ifftshift([0 1 0; 0 0 0; 0 0 0], (2,))
 ```
 """
 function ifftshift(x::AbstractArray{T, N}, dims=ntuple(identity, Val(N))) where {T, N}
-    ShiftedArrays.circshift(x, map(-, ft_center_diff(size(x), dims)))
+    return ShiftedArrays.circshift(x, map(-, ft_center_diff(size(x), dims)))
 end

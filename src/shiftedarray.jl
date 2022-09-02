@@ -24,12 +24,17 @@ padded_tuple(v::AbstractArray, s) = ntuple(i -> i ≤ length(s) ? s[i] : 0, ndim
 """
     ShiftedArray(parent::AbstractArray, shifts, default)
 
-Custom `AbstractArray` object to store an `AbstractArray` `parent` shifted by `shifts` steps (where `shifts` is
-a `Tuple` with one `shift` value per dimension of `parent`).
+Custom `AbstractArray` object to store an `AbstractArray` `parent` shifted by `shifts` steps
+(where `shifts` is a `Tuple` with one `shift` value per dimension of `parent`).
 For `s::ShiftedArray`, `s[i...] == s.parent[map(-, i, s.shifts)...]` if `map(-, i, s.shifts)`
 is a valid index for `s.parent`, and `s.v[i, ...] == default` otherwise.
 Use `copy` to collect the values of a `ShiftedArray` into a normal `Array`.
-The recommended constructor is `ShiftedArray(parent, shifts; default = missing)`
+The recommended constructor is `ShiftedArray(parent, shifts; default = missing)`.
+
+!!! note
+    If `parent` is itself a `ShiftedArray` with a compatible default value,
+    the constructor does not nest `ShiftedArray` objects but rather combines
+    the shifts additively.
 
 # Examples
 
@@ -78,8 +83,19 @@ struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
     default::M
 end
 
-ShiftedArray(v::AbstractArray{T, N}, n = (); default::M = missing) where {T, N, M} =
-     ShiftedArray{T, M, N, typeof(v)}(v, padded_tuple(v, n), default)
+# low-level private constructor to handle type parameters
+function shiftedarray(v::AbstractArray{T, N}, shifts, default::M) where {T, N, M}
+    return ShiftedArray{T, M, N, typeof(v)}(v, padded_tuple(v, shifts), default)
+end
+
+function ShiftedArray(v::AbstractArray, n = (); default = ShiftedArrays.default(v))
+    return if v isa ShiftedArray && default === ShiftedArrays.default(v)
+        shifts = map(+, ShiftedArrays.shifts(v), padded_tuple(v, n))
+        shiftedarray(parent(v), shifts, default)
+    else
+        shiftedarray(v, n, default)
+    end
+end
 
 """
     ShiftedVector{T, S<:AbstractArray}
@@ -88,7 +104,9 @@ Shorthand for `ShiftedArray{T, 1, S}`.
 """
 const ShiftedVector{T, M, S<:AbstractArray} = ShiftedArray{T, M, 1, S}
 
-ShiftedVector(v::AbstractVector, n = (); default = missing) = ShiftedArray(v, n; default = default)
+function ShiftedVector(v::AbstractVector, n = (); default = ShiftedArrays.default(v))
+    return ShiftedArray(v, n; default = default)
+end
 
 size(s::ShiftedArray) = size(parent(s))
 axes(s::ShiftedArray) = axes(parent(s))
@@ -121,3 +139,5 @@ shifts(s::ShiftedArray) = s.shifts
 Return default value.
 """
 default(s::ShiftedArray) = s.default
+
+default(::AbstractArray) = missing

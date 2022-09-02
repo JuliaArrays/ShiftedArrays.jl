@@ -1,9 +1,11 @@
 """
     lag(v::AbstractArray, n = 1; default = missing)
 
-Return a `ShiftedArray` object, with underlying data `v`. The second argument gives the amount
-to shift in each dimension. If it is an integer, it is assumed to refer to the first dimension.
-`default` specifies a default value when you are out of bounds.
+Return a `ShiftedArray` object which lazily represents the array `v` shifted
+by `n` (an `Integer` or a `Tuple` of `Integer`s).
+If the number of dimensions of `v` exceeds the length of `n`, the shift in the
+remaining dimensions is assumed to be `0`.
+`default` specifies a default value to return when out of bounds in the original array.
 
 # Examples
 
@@ -46,14 +48,18 @@ julia> s = lag(v, (0, 2))
  missing  missing  4  8
 ```
 """
-lag(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, n; default = default)
+function lag(v::AbstractArray, n = 1; default = ShiftedArrays.default(v))
+    return ShiftedArray(v, n; default = default)
+end
 
 """
     lead(v::AbstractArray, n = 1; default = missing)
 
-Return a `ShiftedArray` object, with underlying data `v`. The second argument gives the amount
-to shift negatively in each dimension. If it is an integer, it is assumed to refer
-to the first dimension. `default` specifies a default value when you are out of bounds.
+Return a `ShiftedArray` object which lazily represents the array `v` shifted
+negatively by `n` (an `Integer` or a `Tuple` of `Integer`s).
+If the number of dimensions of `v` exceeds the length of `n`, the shift in the
+remaining dimensions is assumed to be `0`.
+`default` specifies a default value to return when out of bounds in the original array.
 
 # Examples
 
@@ -96,4 +102,6 @@ julia> s = lead(v, (0, 2))
  12  16  missing  missing
 ```
 """
-lead(v::AbstractArray, n = 1; default = missing) = ShiftedArray(v, map(-, n); default = default)
+function lead(v::AbstractArray, n = 1; default = ShiftedArrays.default(v))
+    return ShiftedArray(v, map(-, n); default = default)
+end

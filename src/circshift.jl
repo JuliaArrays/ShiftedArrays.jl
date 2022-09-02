@@ -1,9 +1,10 @@
 """
     circshift(v::AbstractArray, n)
 
-Return a `CircShiftedArray` object, with underlying data `v`. The second argument gives the amount
-to circularly shift in each dimension. If it is an integer, it is assumed to refer to the
-first dimension.
+Return a `CircShiftedArray` object which lazily represents the array `v` shifted
+circularly by `n` (an `Integer` or a `Tuple` of `Integer`s).
+If the number of dimensions of `v` exceeds the length of `n`, the shift in the
+remaining dimensions is assumed to be `0`.
 
 # Examples
 
