@@ -70,21 +70,6 @@ julia> ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)
    3.1
 ```
 
-### Out of bound indexes
-
-The bound check is performed only on the parent `Array`, not on the `ShiftedArray`, so for example:
-
-```julia
-julia> ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)[-2:3]
-6-element Array{Float64,1}:
- NaN
- NaN
- NaN
- NaN
-   1.2
-   3.1
-```
-
 ## Shifting the data
 
 Using the `ShiftedArray` type, this package provides two operations for lazily shifting vectors: `lag` and `lead`.
@@ -92,21 +77,21 @@ Using the `ShiftedArray` type, this package provides two operations for lazily s
 ```julia
 julia> v = [1, 3, 5, 4];
 
-julia> lag(v)
+julia> ShiftedArrays.lag(v)
 4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
   missing
  1       
  3       
  5       
 
-julia> v .- lag(v) # compute difference from previous element without unnecessary allocations
+julia> v .- ShiftedArrays.lag(v) # compute difference from previous element without unnecessary allocations
 4-element Array{Any,1}:
    missing
   2       
   2       
  -1       
 
-julia> s = lag(v, 2) # shift by more than one element
+julia> s = ShiftedArrays.lag(v, 2) # shift by more than one element
 4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
   missing
   missing
@@ -119,7 +104,7 @@ julia> s = lag(v, 2) # shift by more than one element
 ```julia
 julia> v = [1, 3, 5, 4];
 
-julia> lead(v)
+julia> ShiftedArrays.lead(v)
 4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
  3       
  5       
