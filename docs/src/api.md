@@ -12,8 +12,8 @@ CircShiftedVector
 ## Shifting operations
 
 ```@docs
-lag
-lead
+ShiftedArrays.lag
+ShiftedArrays.lead
 ShiftedArrays.circshift
 ```
 

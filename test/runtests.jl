@@ -163,22 +163,22 @@ end
 
 @testset "laglead" begin
     v = [1, 3, 8, 12]
-    diff = v .- lag(v)
+    diff = v .- ShiftedArrays.lag(v)
     @test isequal(diff, [missing, 2, 5, 4])
 
-    diff2 = v .- lag(v, 2)
+    diff2 = v .- ShiftedArrays.lag(v, 2)
     @test isequal(diff2, [missing, missing, 7, 9])
 
-    @test all(lag(v, 2, default = -100) .== coalesce.(lag(v, 2), -100))
+    @test all(ShiftedArrays.lag(v, 2, default = -100) .== coalesce.(ShiftedArrays.lag(v, 2), -100))
 
-    diff = v .- lead(v)
+    diff = v .- ShiftedArrays.lead(v)
     @test isequal(diff, [-2, -5, -4, missing])
 
-    diff2 = v .- lead(v, 2)
+    diff2 = v .- ShiftedArrays.lead(v, 2)
     @test isequal(diff2, [-7, -9, missing, missing])
 
-    @test all(lead(v, 2, default = -100) .== coalesce.(lead(v, 2), -100))
+    @test all(ShiftedArrays.lead(v, 2, default = -100) .== coalesce.(ShiftedArrays.lead(v, 2), -100))
 
-    @test lag(lag(v, 1), 2) === lag(v, 3)
-    @test lead(lead(v, 1), 2) === lead(v, 3)
+    @test ShiftedArrays.lag(ShiftedArrays.lag(v, 1), 2) === ShiftedArrays.lag(v, 3)
+    @test ShiftedArrays.lead(ShiftedArrays.lead(v, 1), 2) === ShiftedArrays.lead(v, 3)
 end
