@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Introduction · ShiftedArrays.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">ShiftedArrays.jl</span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Introduction</a><ul class="internal"><li><a class="tocitem" href="#Shifted-Arrays"><span>Shifted Arrays</span></a></li><li><a class="tocitem" href="#Shifting-the-data"><span>Shifting the data</span></a></li><li><a class="tocitem" href="#Shifting-the-data-circularly"><span>Shifting the data circularly</span></a></li></ul></li><li><a class="tocitem" href="api/">API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Introduction</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Introduction</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaArrays/ShiftedArrays.jl/blob/master/docs/src/index.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="ShiftedArrays"><a class="docs-heading-anchor" href="#ShiftedArrays">ShiftedArrays</a><a id="ShiftedArrays-1"></a><a class="docs-heading-anchor-permalink" href="#ShiftedArrays" title="Permalink"></a></h1><p>Implementation of shifted arrays.</p><h2 id="Shifted-Arrays"><a class="docs-heading-anchor" href="#Shifted-Arrays">Shifted Arrays</a><a id="Shifted-Arrays-1"></a><a class="docs-heading-anchor-permalink" href="#Shifted-Arrays" title="Permalink"></a></h2><p>A <code>ShiftedArray</code> is a lazy view of an Array, shifted on some or all of his indexing dimensions by some constant values.</p><pre><code class="language-julia">julia&gt; v = reshape(1:16, 4, 4)
-4×4 Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}:
+4×4 reshape(::UnitRange{Int64}, 4, 4) with eltype Int64:
  1  5   9  13
  2  6  10  14
  3  7  11  15
  4  8  12  16
 
- julia&gt; s = ShiftedArray(v, (2, 0))
- 4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
-   missing   missing    missing    missing
-   missing   missing    missing    missing
-  1         5          9         13       
-  2         6         10         14  </code></pre><p>The parent Array as well as the amount of shifting can be recovered with <code>parent</code> and <code>shifts</code> respectively.</p><pre><code class="language-julia">julia&gt; parent(s)
-4×4 Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}:
+julia&gt; s = ShiftedArray(v, (2, 0))
+4×4 ShiftedArray{Int64, Missing, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
+  missing   missing    missing    missing
+  missing   missing    missing    missing
+ 1         5          9         13
+ 2         6         10         14 </code></pre><p>The parent Array as well as the amount of shifting can be recovered with <code>parent</code> and <code>shifts</code> respectively.</p><pre><code class="language-julia">julia&gt; parent(s)
+4×4 reshape(::UnitRange{Int64}, 4, 4) with eltype Int64:
  1  5   9  13
  2  6  10  14
  3  7  11  15
@@ -20,64 +20,58 @@
 
 julia&gt; shifts(s)
 (2, 0)</code></pre><p><code>shifts</code> returns a <code>Tuple</code>, where the n-th element corresponds to the shift on the n-th dimension of the parent <code>Array</code>.</p><p>Use <code>copy</code> to collect the shifted data into an <code>Array</code>:</p><pre><code class="language-julia">julia&gt; copy(s)
-4×4 Array{Union{Int64, Missing},2}:
+4×4 Matrix{Union{Missing, Int64}}:
   missing   missing    missing    missing
   missing   missing    missing    missing
- 1         5          9         13       
+ 1         5          9         13
  2         6         10         14   </code></pre><p>If you pass an integer, it will shift in the first dimension:</p><pre><code class="language-julia">julia&gt; ShiftedArray(v, 1)
-4×4 ShiftedArrays.ShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
+4×4 ShiftedArray{Int64, Missing, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
   missing   missing    missing    missing
  1         5          9         13
  2         6         10         14
  3         7         11         15</code></pre><p>A custom default value (other than <code>missing</code>) can be provided with the <code>default</code> keyword:</p><pre><code class="language-julia">julia&gt; ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)
-3-element ShiftedArrays.ShiftedArray{Float64,Float64,1,Array{Float64,1}}:
+3-element ShiftedVector{Float64, Float64, Vector{Float64}}:
  NaN
    1.2
-   3.1</code></pre><h3 id="Out-of-bound-indexes"><a class="docs-heading-anchor" href="#Out-of-bound-indexes">Out of bound indexes</a><a id="Out-of-bound-indexes-1"></a><a class="docs-heading-anchor-permalink" href="#Out-of-bound-indexes" title="Permalink"></a></h3><p>The bound check is performed only on the parent <code>Array</code>, not on the <code>ShiftedArray</code>, so for example:</p><pre><code class="language-julia">julia&gt; ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)[-2:3]
-6-element Array{Float64,1}:
- NaN
- NaN
- NaN
- NaN
-   1.2
-   3.1</code></pre><h2 id="Shifting-the-data"><a class="docs-heading-anchor" href="#Shifting-the-data">Shifting the data</a><a id="Shifting-the-data-1"></a><a class="docs-heading-anchor-permalink" href="#Shifting-the-data" title="Permalink"></a></h2><p>Using the <code>ShiftedArray</code> type, this package provides two operations for lazily shifting vectors: <code>lag</code> and <code>lead</code>.</p><pre><code class="language-julia">julia&gt; v = [1, 3, 5, 4];
+   3.1</code></pre><h3 id="Out-of-bound-indexes"><a class="docs-heading-anchor" href="#Out-of-bound-indexes">Out of bound indexes</a><a id="Out-of-bound-indexes-1"></a><a class="docs-heading-anchor-permalink" href="#Out-of-bound-indexes" title="Permalink"></a></h3><p>Accessing indexes outside the <code>ShiftedArray</code> give a <code>BoundsError</code>, even if the shifted index would have been valid in the parent array.</p><pre><code class="language-julia">julia&gt; ShiftedArray([1, 2, 3], 1)[4]
+ERROR: BoundsError: attempt to access 3-element ShiftedVector{Int64, Missing, Vector{Int64}} at index [4]</code></pre><h2 id="Shifting-the-data"><a class="docs-heading-anchor" href="#Shifting-the-data">Shifting the data</a><a id="Shifting-the-data-1"></a><a class="docs-heading-anchor-permalink" href="#Shifting-the-data" title="Permalink"></a></h2><p>Using the <code>ShiftedArray</code> type, this package provides two operations for lazily shifting vectors: <code>lag</code> and <code>lead</code>.</p><pre><code class="language-julia">julia&gt; v = [1, 3, 5, 4];
 
-julia&gt; lag(v)
-4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
+julia&gt; ShiftedArrays.lag(v)
+4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
   missing
- 1       
- 3       
+ 1
+ 3
  5       
 
-julia&gt; v .- lag(v) # compute difference from previous element without unnecessary allocations
-4-element Array{Any,1}:
+julia&gt; v .- ShiftedArrays.lag(v) # compute difference from previous element without unnecessary allocations
+4-element Vector{Union{Missing, Int64}}:
    missing
-  2       
-  2       
+  2
+  2
  -1       
 
-julia&gt; s = lag(v, 2) # shift by more than one element
-4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
+julia&gt; s = ShiftedArrays.lag(v, 2) # shift by more than one element
+4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
   missing
   missing
- 1       
+ 1
  3</code></pre><p><code>lead</code> is the analogous of <code>lag</code> but shifts in the opposite direction:</p><pre><code class="language-julia">julia&gt; v = [1, 3, 5, 4];
 
-julia&gt; lead(v)
-4-element ShiftedArrays.ShiftedArray{Int64,1,Array{Int64,1}}:
- 3       
- 5       
- 4       
+julia&gt; ShiftedArrays.lead(v)
+4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
+ 3
+ 5
+ 4
   missing</code></pre><h2 id="Shifting-the-data-circularly"><a class="docs-heading-anchor" href="#Shifting-the-data-circularly">Shifting the data circularly</a><a id="Shifting-the-data-circularly-1"></a><a class="docs-heading-anchor-permalink" href="#Shifting-the-data-circularly" title="Permalink"></a></h2><p>Julia Base provides a function <code>circshift</code> to shift the data circularly. However this function creates a copy of the vector, which may be unnecessary if the rotated vector is to be used only once. This package provides the <code>CircShiftedArray</code> type, which is a lazy view of an array shifted on some or all of his indexing dimensions by some constant values.</p><p>Our implementation of <code>circshift</code> relies on them to avoid copying:</p><pre><code class="language-julia">julia&gt; w = reshape(1:16, 4, 4);
 
 julia&gt; s = ShiftedArrays.circshift(w, (1, -1))
-4×4 ShiftedArrays.CircShiftedArray{Int64,2,Base.ReshapedArray{Int64,2,UnitRange{Int64},Tuple{}}}:
+4×4 CircShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
  8  12  16  4
  5   9  13  1
  6  10  14  2
  7  11  15  3</code></pre><p>As usual, you can <code>copy</code> the result to have a normal <code>Array</code>:</p><pre><code class="language-julia">julia&gt; copy(s)
-4×4 Array{Int64,2}:
+4×4 Matrix{Int64}:
  8  12  16  4
  5   9  13  1
  6  10  14  2
- 7  11  15  3</code></pre></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 2 September 2022 12:46">Friday 2 September 2022</span>. Using Julia version 1.8.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 7  11  15  3</code></pre></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="api/">API »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 12 September 2022 08:33">Monday 12 September 2022</span>. Using Julia version 1.8.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
