@@ -4,6 +4,9 @@ on:
     types:
       - created
   workflow_dispatch:
+    inputs:
+      lookback:
+        default: 3
 permissions:
   contents: write
 jobs:
@@ -15,4 +18,3 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ssh: ${{ secrets.DOCUMENTER_KEY }}
-          lookback: 5
