@@ -4,7 +4,7 @@ Implementation of shifted arrays.
 
 ## Shifted Arrays
 
-A `ShiftedArray` is a lazy view of an Array, shifted on some or all of his indexing dimensions by some constant values.
+A `ShiftedArray` is a lazy view of an Array, shifted on some or all of its indexing dimensions by some constant values.
 
 ```julia
 julia> v = reshape(1:16, 4, 4)
