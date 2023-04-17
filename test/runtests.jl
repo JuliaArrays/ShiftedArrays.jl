@@ -100,7 +100,7 @@ end
     sv[3] = 12 
     @test collect(sv) == [3, 0, 12, 1]
     @test v == [1, 3, 0, 12]
-    @test sv === setindex!(sv, 12, 3) 
+    @test sv[3] === setindex!(sv, 12, 3) # why did this need a change?
     @test checkbounds(Bool, sv, 2)
     @test !checkbounds(Bool, sv, 123)
     sv = CircShiftedArray(v, 3)
