@@ -40,13 +40,16 @@ julia> copy(s)
 struct CircShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple} <: AbstractArray{T,N}
     parent::A    
 
-    function CircShiftedArray(parent::A, myshift::NTuple{N,Int}=ntuple(x->0,ndims(A))) where {T,N,A<:AbstractArray{T,N}}
-        ws = wrapshift(myshift, size(parent))
-        new{T,N,A, Tuple{ws...}}(parent)
+    function CircShiftedArray(p::A, n=())::CircShiftedArray{T,N,A,NTuple{N,Int}} where {T,N,A<:AbstractArray{T,N}}
+        shifts = map(mod, padded_tuple(p, n), size(p))
+        ws = wrapshift(shifts, size(p))
+        new{T,N,A, Tuple{ws...}}(p)
     end
-    function CircShiftedArray(parent::CircShiftedArray{T,N,A,S}, myshift::NTuple{N,Int}=ntuple(x->0,ndims(A))) where {T,N,A,S}
-        ws = wrapshift(myshift .+ to_tuple(shifts(typeof(parent))), size(parent))
-        new{T,N,A, Tuple{ws...}}(parent.parent)
+    # if a CircShiftedArray is wrapped in a CircShiftedArray, only a single CSA results 
+    function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, n=())::CircShiftedArray{T,N,A,NTuple{N,Int}} where {T,N,A,S}
+        shifts = map(mod, padded_tuple(p, n), size(p))
+        ws = wrapshift(shift .+ to_tuple(shifts(typeof(p))), size(p))
+        new{T,N,A, Tuple{ws...}}(p.parent)
     end
 end
 
@@ -105,9 +108,9 @@ end
 @inline Base.IndexStyle(::Type{<:CircShiftedArray}) = IndexLinear()
 @inline Base.parent(csa::CircShiftedArray) = csa.parent
 
-CircShiftedVector(v::AbstractVector, s = (0,)) = CircShiftedArray(v, s)
-CircShiftedVector(v::AbstractVector, s::Number) = CircShiftedArray(v, (s,))
-CircShiftedArray(v::AbstractVector, s::Number) = CircShiftedArray(v, (s,))
+CircShiftedVector(v::AbstractVector, s = ()) = CircShiftedArray(v, s)
+# CircShiftedVector(v::AbstractVector, s::Number) = CircShiftedArray(v, (s,))
+# CircShiftedArray(v::AbstractArray, s::Number) = CircShiftedArray(v, map(mod, padded_tuple(v, s), size(v)))
 
 # linear indexing ignores the shifts
 @inline Base.getindex(csa::CircShiftedArray{T,N,A,S}, i::Int) where {T,N,A,S} = getindex(csa.parent, i)
@@ -262,7 +265,7 @@ Base.Broadcast.copyto!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{CircS
 # function copy(CircShiftedArray)
 #     collect(CircShiftedArray)
 # end
-
+# for speed reasons use the optimized version in Base for actually perfoming the circshift in this case:
 Base.collect(csa::CircShiftedArray{T,N,A,S}) where {T,N,A,S} = circshift(csa.parent, to_tuple(S))
 
 # # interaction with numbers should not still stay a CSA
