@@ -1,6 +1,5 @@
 export CircShiftedArray
 using Base
-using CUDA
 
 """
     CircShiftedArray(parent::AbstractArray, shifts)
@@ -41,14 +40,14 @@ struct CircShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple} <: Abstract
     parent::A    
 
     function CircShiftedArray(p::A, n=())::CircShiftedArray{T,N,A,NTuple{N,Int}} where {T,N,A<:AbstractArray{T,N}}
-        shifts = map(mod, padded_tuple(p, n), size(p))
-        ws = wrapshift(shifts, size(p))
+        myshifts = map(mod, padded_tuple(p, n), size(p))
+        ws = wrapshift(myshifts, size(p))
         new{T,N,A, Tuple{ws...}}(p)
     end
     # if a CircShiftedArray is wrapped in a CircShiftedArray, only a single CSA results 
     function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, n=())::CircShiftedArray{T,N,A,NTuple{N,Int}} where {T,N,A,S}
-        shifts = map(mod, padded_tuple(p, n), size(p))
-        ws = wrapshift(shift .+ to_tuple(shifts(typeof(p))), size(p))
+        myshifts = map(mod, padded_tuple(p, n), size(p))
+        ws = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
         new{T,N,A, Tuple{ws...}}(p.parent)
     end
 end
@@ -136,7 +135,7 @@ end
     #@show "materialize! cs"
     if only_shifted(bc)
         # fall back to standard assignment
-        @show "use raw"
+        # @show "use raw"
         # to avoid calling the method defined below, we need to use `invoke`:
         invoke(Base.Broadcast.materialize!, Tuple{AbstractArray, Base.Broadcast.Broadcasted}, dest, bc) 
     else
@@ -175,7 +174,7 @@ this function calls itself recursively to subdivide the array into tiles, which 
 
 """
 function materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array=true) 
-    @show "materialize_checkerboard"
+    # @show "materialize_checkerboard"
     dest = refine_view(dest)
     # gets Tuples of Tuples of 1D ranges (low and high) for each dimension
     cs_rngs, ns_rngs = generate_shift_ranges(dest, myshift)
@@ -262,12 +261,24 @@ end
 Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S}, src::CircShiftedArray) where {T,N,A,S} = Base.Broadcast.materialize!(dest.parent, src.parent)
 Base.Broadcast.copyto!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{CircShiftedArrayStyle{N,S}}) where {N,S} = Base.Broadcast.materialize!(dest, bc)
 
+# these array isequal and == functions are defined to be compatible with the previous definition of equality (equal values only)
+function Base.isequal(csa::CircShiftedArray{T,N,A,S}, arr::AbstractArray) where {T,N,A,S}
+    if isequal(Ref(csa),Ref(arr))
+        return true
+    end
+    all(isequal.(csa,arr))
+end
+Base.isequal(arr::AbstractArray, csa::CircShiftedArray) = isequal(csa, arr)
+Base.isequal(csa1::CircShiftedArray, csa2::CircShiftedArray)  =invoke(isequal, Tuple{CircShiftedArray, AbstractArray}, csa1, csa2)
+Base. ==(csa::CircShiftedArray, arr::AbstractArray) = isequal(csa, arr)
+Base. ==(arr::AbstractArray, csa::CircShiftedArray) = isequal(csa, arr)
+Base. ==(csa1::CircShiftedArray, csa2::CircShiftedArray) = isequal(csa1,csa2)
+ 
 # function copy(CircShiftedArray)
 #     collect(CircShiftedArray)
 # end
 # for speed reasons use the optimized version in Base for actually perfoming the circshift in this case:
-Base.collect(csa::CircShiftedArray{T,N,A,S}) where {T,N,A,S} = circshift(csa.parent, to_tuple(S))
-
+Base.collect(csa::CircShiftedArray{T,N,A,S}) where {T,N,A,S} = Base.circshift(csa.parent, to_tuple(S))
 # # interaction with numbers should not still stay a CSA
 # Base.Broadcast.promote_rule(csa::Type{CircShiftedArray}, na::Type{Number})  = typeof(csa)
 # Base.Broadcast.promote_rule(scsa::Type{SubArray{T,N,P,Rngs,B}}, t::T2) where {T,N,P<:CircShiftedArray,Rngs,B,T2}  = typeof(scsa.parent)
@@ -301,6 +312,8 @@ function Base.similar(bc::Base.Broadcast.Broadcasted{CircShiftedArrayStyle{N,S},
 end
 
 function Base.show(io::IO, mm::MIME"text/plain", cs::CircShiftedArray) 
-    CUDA.@allowscalar invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
+    # using CUDA
+    # CUDA.@allowscalar invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
+    invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
 end
 

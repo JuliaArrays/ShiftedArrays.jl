@@ -117,8 +117,10 @@ end
     @test shifts(sv) == (2, 0)
     @test isequal(sv, CircShiftedArray(v, -2))
     # @inferred tests the result type
-    @test isequal(@inferred(CircShiftedArray(v, 2)), @inferred(CircShiftedArray(v, (2,))))
-    @test isequal(@inferred(CircShiftedArray(v)), @inferred(CircShiftedArray(v, (0, 0))))
+    # @test isequal(@inferred(CircShiftedArray(v, 2)), @inferred(CircShiftedArray(v, (2,))))
+    # @test isequal(@inferred(CircShiftedArray(v)), @inferred(CircShiftedArray(v, (0, 0))))
+    @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
+    @test isequal(CircShiftedArray(v), CircShiftedArray(v, (0, 0)))
     s = CircShiftedArray(v, (0, 2))
     @test isequal(collect(s), [ 9 13 1 5;
                                10 14 2 6;
