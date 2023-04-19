@@ -318,10 +318,16 @@ end
 
 function Base.show(io::IO, mm::MIME"text/plain", cs::CircShiftedArray) 
     # a bit of a hack to determine whether the datatype is CuArray without needing a CUDA.jl dependence
-    if startswith(string(cs.parent),"CuArray")
+    if startswith(string(typeof(cs.parent)),"CuArray")
         # this is needed such that the show method does not throw an error when individual element access is used
-        print("CircShiftedArray: ")
-        invoke(Base.show, Tuple{IO, typeof(mm), typeof(cs.parent)}, io, mm, cs) 
+        buffer = IOBuffer()
+        ioc = IOContext(buffer, io)
+        #invoke(Base.show, Tuple{IO, typeof(mm), typeof(cs.parent)}, ioc, mm, cs.parent) 
+        show(ioc, mm, cs.parent)
+        buffer = String(take!(buffer))
+        lines = split(buffer,"\n")
+        lines[1] = string(typeof(cs)) * ":"
+        print(io, join(lines,"\n"))
         # @allowscalar invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
     else
         invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
