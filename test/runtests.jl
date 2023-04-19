@@ -170,6 +170,9 @@ end
     test_broadcast(x->x+1,v,(2,-1))
     v = rand(Int,3,4,5)
     test_broadcast(x->x+1,v,(2,0,3))
+    v = rand(Int,6,4,8)
+    # test whether views are handled correctly
+    test_broadcast(x->x+1,(@view v[1:2,1:2,4:6]),(2,0,3))
     v = rand(ComplexF32,5,4,3)
     test_broadcast(x->x+2+x*x,v,(2,-1,3))
 end
