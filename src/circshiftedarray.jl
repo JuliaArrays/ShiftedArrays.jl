@@ -51,10 +51,10 @@ struct CircShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple} <: Abstract
         return new{T,N,A, Tuple{ws...}}(p.parent)
     end
     # this is needed to have a version where the type can be inferred directly
-    function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, myshifts::NTuple{N,T})::CircShiftedArray{T,N,A,Tuple} where {T,N,A,S}
-        ws = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
-        return new{T,N,A, Tuple{ws...}}(p.parent)
-    end
+    # function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, myshifts::NTuple{N,T})::CircShiftedArray{T,N,A,Tuple} where {T,N,A,S}
+    #     ws = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
+    #     return new{T,N,A, Tuple{ws...}}(p.parent)
+    # end
 end
 
 """
