@@ -116,7 +116,7 @@ end
     @test sv[1, 3] == 11
     @test shifts(sv) == (2, 0)
     @test isequal(sv, CircShiftedArray(v, -2))
-    # @inferred tests the result type
+    # @inferred tests the result type to be inferrable. Does NOT work for CircShiftedArray
     # @test isequal(@inferred(CircShiftedArray(v, 2)), @inferred(CircShiftedArray(v, (2,))))
     # @test isequal(@inferred(CircShiftedArray(v)), @inferred(CircShiftedArray(v, (0, 0))))
     @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
@@ -129,6 +129,49 @@ end
     sv = CircShiftedArray(v, 3)
     svnest = CircShiftedArray(CircShiftedArray(v, 2), 1)
     @test sv === svnest
+end
+
+@testset "CircShiftedArray" begin
+    # Some tests for the broadcasting functionality
+    function test_broadcast(expr, src, sv)
+        ca = circshift(src, sv)
+        csa = CircShiftedArray(src, sv)
+        @test eltype(ca) == eltype(csa)
+        @test ca == csa
+        # approx is needed since the summing order is slightly different in both cases
+        @test sum(ca) ≈ sum(csa)
+        for d = 1:ndims(src)
+            @test sum(ca, dims=d) ≈ sum(csa, dims=d)
+        end
+        res = expr.(ca)
+        res_c = expr.(csa)
+        @test res_c == res
+        for d = 1:ndims(src)
+            @test sum(expr.(ca), dims=d) ≈ sum(expr.(csa), dims=d)
+        end
+        res_c = expr.(csa) .+ src
+        @test res_c == res .+ src
+        for d = 1:ndims(src)
+            @test sum(expr.(csa) .+ src, dims=d) ≈ sum(res .+ src, dims=d)
+        end
+        res_c = expr.(csa)
+        res1 = copy(src)
+        res1 .= expr.(ca)
+        @test res_c == res1 
+        res1 .= expr.(ca) .+ src
+        @test collect(res_c) .+ src == collect(res1)
+        res2 = CircShiftedArray(res1, sv)
+        res2 .= expr.(ca)
+        @test res2 == res_c
+        @test collect(res2) == collect(res_c)
+        @test sum(res2) == sum(res_c)
+    end
+    v = reshape(1:16, 4, 4)
+    test_broadcast(x->x+1,v,(2,-1))
+    v = rand(Int,3,4,5)
+    test_broadcast(x->x+1,v,(2,0,3))
+    v = rand(ComplexF32,5,4,3)
+    test_broadcast(x->x+2+x*x,v,(2,-1,3))
 end
 
 @testset "circshift" begin
@@ -162,6 +205,7 @@ end
 
     @test (2, 2, 0) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2)) # Fourier center is at (2, 3, 0)
     @test (2, 2, 3) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2, 3)) # Fourier center is at (2, 3, 4)
+
 end
 
 @testset "laglead" begin

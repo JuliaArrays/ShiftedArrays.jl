@@ -39,16 +39,21 @@ julia> copy(s)
 struct CircShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple} <: AbstractArray{T,N}
     parent::A    
 
-    function CircShiftedArray(p::A, n=())::CircShiftedArray{T,N,A,NTuple{N,Int}} where {T,N,A<:AbstractArray{T,N}}
+    function CircShiftedArray(p::AbstractArray{T,N}, n=())::CircShiftedArray{T,N,typeof(p),Tuple} where {T,N}
         myshifts = map(mod, padded_tuple(p, n), size(p))
-        ws = wrapshift(myshifts, size(p))
-        new{T,N,A, Tuple{ws...}}(p)
+        ws::NTuple{N,Int} = wrapshift(myshifts, size(p))
+        return new{T,N,typeof(p), Tuple{ws...}}(p)
     end
     # if a CircShiftedArray is wrapped in a CircShiftedArray, only a single CSA results 
-    function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, n=())::CircShiftedArray{T,N,A,NTuple{N,Int}} where {T,N,A,S}
+    function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, n=())::CircShiftedArray{T,N,A,Tuple} where {T,N,A,S}
         myshifts = map(mod, padded_tuple(p, n), size(p))
+        ws::NTuple{N,Int} = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
+        return new{T,N,A, Tuple{ws...}}(p.parent)
+    end
+    # this is needed to have a version where the type can be inferred directly
+    function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, myshifts::NTuple{N,T})::CircShiftedArray{T,N,A,Tuple} where {T,N,A,S}
         ws = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
-        new{T,N,A, Tuple{ws...}}(p.parent)
+        return new{T,N,A, Tuple{ws...}}(p.parent)
     end
 end
 
@@ -107,7 +112,7 @@ end
 @inline Base.IndexStyle(::Type{<:CircShiftedArray}) = IndexLinear()
 @inline Base.parent(csa::CircShiftedArray) = csa.parent
 
-CircShiftedVector(v::AbstractVector, s = ()) = CircShiftedArray(v, s)
+#CircShiftedVector(v::AbstractVector, s = ()) = CircShiftedArray(v, s)
 # CircShiftedVector(v::AbstractVector, s::Number) = CircShiftedArray(v, (s,))
 # CircShiftedArray(v::AbstractArray, s::Number) = CircShiftedArray(v, map(mod, padded_tuple(v, s), size(v)))
 
@@ -312,8 +317,14 @@ function Base.similar(bc::Base.Broadcast.Broadcasted{CircShiftedArrayStyle{N,S},
 end
 
 function Base.show(io::IO, mm::MIME"text/plain", cs::CircShiftedArray) 
-    # using CUDA
-    # CUDA.@allowscalar invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
-    invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
+    # a bit of a hack to determine whether the datatype is CuArray without needing a CUDA.jl dependence
+    if startswith(string(cs.parent),"CuArray")
+        # this is needed such that the show method does not throw an error when individual element access is used
+        print("CircShiftedArray: ")
+        invoke(Base.show, Tuple{IO, typeof(mm), typeof(cs.parent)}, io, mm, cs) 
+        # @allowscalar invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
+    else
+        invoke(Base.show, Tuple{IO, typeof(mm), AbstractArray}, io, mm, cs) 
+    end
 end
 
