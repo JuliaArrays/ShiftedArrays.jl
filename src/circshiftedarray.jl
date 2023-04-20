@@ -239,7 +239,8 @@ function refine_view(v::SubArray{T,N,P,I,L}) where {T,N,P<:CircShiftedArray,I,L}
     # find the full slices, which can stay a circ shifted array withs shifts
     sub_rngs = ntuple((d)-> !isa(v.indices[d], Base.Slice), ndims(v.parent))
 
-    new_ids_begin = wrapids(ntuple((d)-> v.indices[d][begin] .- myshift[d], ndims(v.parent)), sz)
+    # in the line below one should better use "begin" instead of "1" but this is not supported by early Julia versions.
+    new_ids_begin = wrapids(ntuple((d)-> v.indices[d][1] .- myshift[d], ndims(v.parent)), sz)
     new_ids_end = wrapids(ntuple((d)-> v.indices[d][end] .- myshift[d], ndims(v.parent)), sz)
     if any(sub_rngs .&& (new_ids_end .< new_ids_begin))
         error("a view of a shifted array is not allowed to cross boarders of the original array. Do not use a view here.")
@@ -323,7 +324,8 @@ function Base.show(io::IO, mm::MIME"text/plain", cs::CircShiftedArray)
         buffer = IOBuffer()
         ioc = IOContext(buffer, io)
         #invoke(Base.show, Tuple{IO, typeof(mm), typeof(cs.parent)}, ioc, mm, cs.parent) 
-        show(ioc, mm, cs.parent)
+        # unfortunately we have to collect here
+        show(ioc, mm, collect(cs))
         buffer = String(take!(buffer))
         lines = split(buffer,"\n")
         lines[1] = string(typeof(cs)) * ":"
