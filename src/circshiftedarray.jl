@@ -242,7 +242,7 @@ function refine_view(v::SubArray{T,N,P,I,L}) where {T,N,P<:CircShiftedArray,I,L}
     # in the line below one should better use "begin" instead of "1" but this is not supported by early Julia versions.
     new_ids_begin = wrapids(ntuple((d)-> v.indices[d][1] .- myshift[d], ndims(v.parent)), sz)
     new_ids_end = wrapids(ntuple((d)-> v.indices[d][end] .- myshift[d], ndims(v.parent)), sz)
-    if any(sub_rngs .&& (new_ids_end .< new_ids_begin))
+    if any(sub_rngs .& (new_ids_end .< new_ids_begin))
         error("a view of a shifted array is not allowed to cross boarders of the original array. Do not use a view here.")
         # potentially this can be remedied, once there is a decent CatViews implementation
     end
