@@ -77,35 +77,23 @@ julia> shifts(s)
 (0, 2)
 ```
 """
-struct ShiftedArray{T, M, N, S<:AbstractArray} <: AbstractArray{Union{T, M}, N}
-    parent::S
-    shifts::NTuple{N, Int}
-    default::M
-end
+const ShiftedArray{T, N, A<:AbstractArray, S, M} = CircShiftedArray{T, N, A, S, M}
 
 # low-level private constructor to handle type parameters
 function shiftedarray(v::AbstractArray{T, N}, shifts, default::M) where {T, N, M}
-    return ShiftedArray{T, M, N, typeof(v)}(v, padded_tuple(v, shifts), default)
+    return CircShiftedArray(v, padded_tuple(v, shifts), default)
 end
 
-function ShiftedArray(v::AbstractArray, n = (); default = ShiftedArrays.default(v))
-    return if v isa ShiftedArray && default === ShiftedArrays.default(v)
-        shifts = map(+, ShiftedArrays.shifts(v), padded_tuple(v, n))
-        shiftedarray(parent(v), shifts, default)
-    else
-        shiftedarray(v, n, default)
-    end
-end
 
 """
     ShiftedVector{T, S<:AbstractArray}
 
-Shorthand for `ShiftedArray{T, 1, S}`.
+Shorthand for `ShiftedArray{T, 1, A, S, M}`.
 """
-const ShiftedVector{T, M, S<:AbstractArray} = ShiftedArray{T, M, 1, S}
+const ShiftedVector{T, N, A<:AbstractArray, S, M} = ShiftedArray{T, 1, A, S, M}
 
 function ShiftedVector(v::AbstractVector, n = (); default = ShiftedArrays.default(v))
-    return ShiftedArray(v, n; default = default)
+    return CircShiftedArray(v, n; default = default)
 end
 
 size(s::ShiftedArray) = size(parent(s))

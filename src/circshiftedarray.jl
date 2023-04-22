@@ -1,6 +1,9 @@
 export CircShiftedArray
 using Base
 
+# just a type to indicate that this is a CircShiftedArray rather than the ShiftedArray 
+struct CircShift end
+
 """
     CircShiftedArray(parent::AbstractArray, shifts)
 
@@ -36,24 +39,30 @@ julia> copy(s)
  5
 ```
 """
-struct CircShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple} <: AbstractArray{T,N}
-    parent::A    
+struct CircShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple, R} <: AbstractArray{T,N}
+    parent::A
 
-    function CircShiftedArray(p::AbstractArray{T,N}, n=())::CircShiftedArray{T,N,typeof(p),Tuple} where {T,N}
+    function CircShiftedArray(p::AbstractArray{T,N}, n=())::CircShiftedArray{T,N,typeof(p), Tuple, CircShift} where {T,N}
         myshifts = map(mod, padded_tuple(p, n), size(p))
         ws::NTuple{N,Int} = wrapshift(myshifts, size(p))
-        return new{T,N,typeof(p), Tuple{ws...}}(p)
+        return new{T,N,typeof(p), Tuple{ws...}, CircShift}(p)
     end
     # if a CircShiftedArray is wrapped in a CircShiftedArray, only a single CSA results 
-    function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, n=())::CircShiftedArray{T,N,A,Tuple} where {T,N,A,S}
+    function CircShiftedArray(p::CircShiftedArray{T,N,A,S,R}, n=())::CircShiftedArray{T,N,A,Tuple, CircShift} where {T,N,A,S,R}
         myshifts = map(mod, padded_tuple(p, n), size(p))
         ws::NTuple{N,Int} = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
-        return new{T,N,A, Tuple{ws...}}(p.parent)
+        return new{T,N,A, Tuple{ws...}, CircShift}(p.parent)
     end
-    # this is needed to have a version where the type can be inferred directly
-    # function CircShiftedArray(p::CircShiftedArray{T,N,A,S}, myshifts::NTuple{N,T})::CircShiftedArray{T,N,A,Tuple} where {T,N,A,S}
-    #     ws = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
-    #     return new{T,N,A, Tuple{ws...}}(p.parent)
+    # function ShiftedArray(p::AbstractArray{T,N}, n=(), R=undef)::CircShiftedArray{T,N,typeof(p), Tuple, R} where {T,N}
+    #     myshifts = map(mod, padded_tuple(p, n), size(p))
+    #     ws::NTuple{N,Int} = wrapshift(myshifts, size(p))
+    #     return new{T,N,typeof(p), Tuple{ws...}, CircShift}(p)
+    # end
+    # # if a CircShiftedArray is wrapped in a CircShiftedArray, only a single CSA results 
+    # function ShiftedArray(p::ShiftedArray{T,N,A,S}, n=())::CircShiftedArray{T,N,A,Tuple, R} where {T,N,A,S}
+    #     myshifts = map(mod, padded_tuple(p, n), size(p))
+    #     ws::NTuple{N,Int} = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
+    #     return new{T,N,A, Tuple{ws...}, CircShift}(p.parent)
     # end
 end
 
@@ -62,7 +71,7 @@ end
 
 Shorthand for `CircShiftedArray{T, 1, S}`.
 """
-const CircShiftedVector{T, S<:AbstractArray} = CircShiftedArray{T, 1, S}
+const CircShiftedVector{T, A<:AbstractArray, S} = CircShiftedArray{T, 1, A, S, CircShift}
 
 CircShiftedVector(v::AbstractVector, n = ()) = CircShiftedArray(v, n)
 
@@ -80,14 +89,14 @@ invert_rng(s, sz) = wrapshift(sz .- s, sz)
 # define a new broadcast style
 struct CircShiftedArrayStyle{N,S} <: Base.Broadcast.AbstractArrayStyle{N} end
 
-shifts(::Type{CircShiftedArray{T,N,A,S}}) where {T,N,A,S} = S
+shifts(::Type{CircShiftedArray{T,N,A,S,R}}) where {T,N,A,S,R} = S
 to_tuple(S::Type{T}) where {T<:Tuple}= tuple(S.parameters...)
 """
     shifts(s::CircShiftedArray)
 
 Return amount by which `s` is shifted compared to `parent(s)`.
 """
-shifts(::CircShiftedArray{T,N,A,S}) where {T,N,A,S} = to_tuple(S)
+shifts(::CircShiftedArray{T,N,A,S,R}) where {T,N,A,S,R} = to_tuple(S)
 
 # convenient constructor
 CircShiftedArrayStyle{N,S}(::Val{M}, t::Tuple) where {N,S,M} = CircShiftedArrayStyle{max(N,M), Tuple{t...}}()
@@ -117,26 +126,26 @@ end
 # CircShiftedArray(v::AbstractArray, s::Number) = CircShiftedArray(v, map(mod, padded_tuple(v, s), size(v)))
 
 # linear indexing ignores the shifts
-@inline Base.getindex(csa::CircShiftedArray{T,N,A,S}, i::Int) where {T,N,A,S} = getindex(csa.parent, i)
-@inline Base.setindex!(csa::CircShiftedArray{T,N,A,S}, v, i::Int) where {T,N,A,S} = setindex!(csa.parent, v, i)
+@inline Base.getindex(csa::CircShiftedArray{T,N,A,S,R}, i::Int) where {T,N,A,S,R} = getindex(csa.parent, i)
+@inline Base.setindex!(csa::CircShiftedArray{T,N,A,S,R}, v, i::Int) where {T,N,A,S,R} = setindex!(csa.parent, v, i)
 
 # mod1 avoids first subtracting one and then adding one
-@inline Base.getindex(csa::CircShiftedArray{T,N,A,S}, i::Vararg{Int,N}) where {T,N,A,S} = 
+@inline Base.getindex(csa::CircShiftedArray{T,N,A,S,CircShift}, i::Vararg{Int,N}) where {T,N,A,S} = 
     getindex(csa.parent, (mod1(i[j]-to_tuple(S)[j], size(csa.parent, j)) for j in 1:N)...)
 
-@inline Base.setindex!(csa::CircShiftedArray{T,N,A,S}, v, i::Vararg{Int,N}) where {T,N,A,S} = 
+@inline Base.setindex!(csa::CircShiftedArray{T,N,A,S,CircShift}, v, i::Vararg{Int,N}) where {T,N,A,S} = 
     (setindex!(csa.parent, v, (mod1(i[j]-to_tuple(S)[j], size(csa.parent, j)) for j in 1:N)...); v)
 
 # These apply for broadcasted assignment operations.
-@inline Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S}, csa::CircShiftedArray{T2,N2,A2,S}) where {T,N,A,S,T2,N2,A2} = Base.Broadcast.materialize!(dest.parent, csa.parent)
+@inline Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S,R}, csa::CircShiftedArray{T2,N2,A2,S,R}) where {T,N,A,S,T2,N2,A2,R} = Base.Broadcast.materialize!(dest.parent, csa.parent)
 
 # remove all the circ-shift part if all shifts are the same
-@inline function Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S}, bc::Base.Broadcast.Broadcasted{CircShiftedArrayStyle{N,S}}) where {T,N,A,S}
+@inline function Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S,R}, bc::Base.Broadcast.Broadcasted{CircShiftedArrayStyle{N,S}}) where {T,N,A,S,R}
     invoke(Base.Broadcast.materialize!, Tuple{A, Base.Broadcast.Broadcasted}, dest.parent, remove_csa_style(bc))
     return dest
 end
 # we cannot specialize the Broadcast style here, since the rhs may not contain a CircShiftedArray and still wants to be assigned
-@inline function Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S}, bc::Base.Broadcast.Broadcasted) where {T,N,A,S}
+@inline function Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S,R}, bc::Base.Broadcast.Broadcasted) where {T,N,A,S,R}
     #@show "materialize! cs"
     if only_shifted(bc)
         # fall back to standard assignment
@@ -208,7 +217,7 @@ end
 @inline split_array_broadcast(bc::Number, noshift_rng, shift_rng) = bc
 @inline split_array_broadcast(bc::AbstractArray, noshift_rng, shift_rng) = @view bc[noshift_rng...]
 @inline split_array_broadcast(bc::CircShiftedArray, noshift_rng, shift_rng) = @view bc.parent[shift_rng...]
-@inline split_array_broadcast(bc::CircShiftedArray{T,N,A,NTuple{N,0}}, noshift_rng, shift_rng)  where {T,N,A} =  @view bc.parent[noshift_rng...]
+@inline split_array_broadcast(bc::CircShiftedArray{T,N,A,NTuple{N,0},R}, noshift_rng, shift_rng)  where {T,N,A,R} =  @view bc.parent[noshift_rng...]
 @inline function split_array_broadcast(v::SubArray{T,N,P,I,L}, noshift_rng, shift_rng) where {T,N,P<:CircShiftedArray,I,L}    
     new_cs = refine_view(v)
     new_shift_rng = refine_shift_rng(v, shift_rng)
@@ -264,11 +273,11 @@ function split_array_broadcast(bc::Base.Broadcast.Broadcasted, noshift_rng, shif
     return res
 end
 
-Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S}, src::CircShiftedArray) where {T,N,A,S} = Base.Broadcast.materialize!(dest.parent, src.parent)
+Base.Broadcast.materialize!(dest::CircShiftedArray{T,N,A,S,R}, src::CircShiftedArray) where {T,N,A,S,R} = Base.Broadcast.materialize!(dest.parent, src.parent)
 Base.Broadcast.copyto!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{CircShiftedArrayStyle{N,S}}) where {N,S} = Base.Broadcast.materialize!(dest, bc)
 
 # these array isequal and == functions are defined to be compatible with the previous definition of equality (equal values only)
-function Base.isequal(csa::CircShiftedArray{T,N,A,S}, arr::AbstractArray) where {T,N,A,S}
+function Base.isequal(csa::CircShiftedArray{T,N,A,S,R}, arr::AbstractArray) where {T,N,A,S,R}
     if isequal(Ref(csa),Ref(arr))
         return true
     end
@@ -284,7 +293,7 @@ Base. ==(csa1::CircShiftedArray, csa2::CircShiftedArray) = isequal(csa1,csa2)
 #     collect(CircShiftedArray)
 # end
 # for speed reasons use the optimized version in Base for actually perfoming the circshift in this case:
-Base.collect(csa::CircShiftedArray{T,N,A,S}) where {T,N,A,S} = Base.circshift(csa.parent, to_tuple(S))
+Base.collect(csa::CircShiftedArray{T,N,A,S,R}) where {T,N,A,S,R} = Base.circshift(csa.parent, to_tuple(S))
 # # interaction with numbers should not still stay a CSA
 # Base.Broadcast.promote_rule(csa::Type{CircShiftedArray}, na::Type{Number})  = typeof(csa)
 # Base.Broadcast.promote_rule(scsa::Type{SubArray{T,N,P,Rngs,B}}, t::T2) where {T,N,P<:CircShiftedArray,Rngs,B,T2}  = typeof(scsa.parent)
