@@ -277,13 +277,13 @@ end
 end
 
 function Base.Broadcast.copyto!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R}}) where {N,S,R}
-    #@show "copyto!"
+    # @show "copyto!"
      Base.Broadcast.materialize!(dest, bc)
 end
 # remove all the (circ-)shift part if all shifts are the same (or constants)
 # @inline function materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrays.ShiftedArrayStyle{N, S, R}}) where {T, N, A, S, R, N, S, R}
 @inline function Base.Broadcast.materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N, S, R}}) where {T, N, A, S, R}
-    #@show "materialize! cs1"
+    # @show "materialize! cs1"
     # @show remove_sa_style(bc)
     #@show A
     invoke(Base.Broadcast.materialize!, Tuple{A, Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}}, dest.parent, remove_sa_broadcast(bc))
@@ -293,7 +293,7 @@ end
 
 # we cannot specialize the Broadcast style here, since the rhs may not contain a ShiftedArray and still wants to be assigned
 @inline function Base.Broadcast.materialize!(dest::ShiftedArray{T,N,A,S,R}, bc::Base.Broadcast.Broadcasted{BT}) where {T,N,A,S,R,BT}
-    #@show "materialize! cs2"
+    # @show "materialize! cs2"
     if only_shifted(bc)
         # fall back to standard assignment
         #@show "use raw"
@@ -364,7 +364,7 @@ this function subdivides the array into tiles, which each needs to be processed 
 
 """
 function materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array=true; array_type=CircShift) 
-    # @show "materialize_checkerboard"
+    #@show "materialize_checkerboard"
     dest = refine_view(dest)
     # gets Tuples of Tuples of 1D ranges (low and high) for each dimension
     cs_rngs, ns_rngs = generate_shift_ranges(dest, wrapshift(size(dest) .- myshift, size(dest)))
@@ -490,7 +490,7 @@ function Base.isequal(csa::ShiftedArray{T,N,A,S,R}, arr::AbstractArray) where {T
 end
 
 Base.isequal(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
-Base.isequal(csa1::ShiftedArray, csa2::ShiftedArray)  =invoke(isequal, Tuple{ShiftedArray, AbstractArray}, csa1, csa2)
+Base.isequal(csa1::ShiftedArray, csa2::ShiftedArray)  = invoke(isequal, Tuple{ShiftedArray, AbstractArray}, csa1, csa2)
 Base. ==(csa::ShiftedArray, arr::AbstractArray) = isequal(csa, arr)
 Base. ==(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
 Base. ==(csa1::ShiftedArray, csa2::ShiftedArray) = isequal(csa1,csa2)
@@ -499,7 +499,7 @@ function Base.copy(arr::ShiftedArray)
     collect(arr)
 end
 
-Base.eltype(arr::CircShiftedArray) = eltype(parent(arr))
+Base.eltype(arr::ShiftedArray{T,N,A,S,R})  where {T,N,A,S,R<:CircShift} = eltype(parent(arr))
 
 # broadcasted(::coalesce, a::ShiftedArray, b) = broadcasted((a, b) -> a && b, a, b)
 
@@ -513,14 +513,29 @@ Base.eltype(arr::CircShiftedArray) = eltype(parent(arr))
 # Base.Broadcast.promote_shape(::Type{ShiftedArray{T,N,A,S}}, ::Type{<:AbstractArray}, ::Type{<:AbstractArray}) where {T,N,A<:AbstractArray,S} = ShiftedArray{T,N,A,S}
 # Base.Broadcast.promote_shape(::Type{ShiftedArray{T,N,A,S}}, ::Type{<:AbstractArray}, ::Type{<:Number}) where {T,N,A<:AbstractArray,S} = ShiftedArray{T,N,A,S}
 
-function Base.similar(arr::ShiftedArray, eltype::Type{T} = eltype(arr.parent), dims::Tuple{Int64, Vararg{Int64, N}} = size(arr)) where {T,N}
-    #@show "similar 1"
-    #@show arr
-    na = similar(arr.parent, eltype, dims)
+function Base.similar(arr::ShiftedArray, eltp::Type{T} = eltype(arr), dims::Tuple{Int64, Vararg{Int64, N}} = size(arr)) where {T,N}
+    # @show "similar 1"
+    na = similar(arr.parent, eltp, dims)
     # the results-type depends on whether the result size is the same or not. Same size can remain ShiftedArray.
     # its important that a shifted array is the result for reductions on CircShiftedArray, since only then the broadcasting works
-    # for normal ShiftedArray we need to create the base type, since similar does not get any shift information when a sub-range is created e.g. sv[1:3] 
-    return ifelse(size(arr)==dims || !isa(arr, CircShiftedArray), na, ShiftedArray(na, shifts(arr); default=default(arr)))
+    # Since similar cannot infer the shift information when a sub-range ws created e.g. sv[1:3] 
+    return na # ifelse(size(arr)==dims, na, ShiftedArray(na, shifts(arr); default=default(arr)))
+end
+
+# specialized version for CircShiftArray which removes the Union Type
+function Base.similar(arr::ShiftedArray, eltp::Type{Union{CircShift,T}} = eltype(arr), dims::Tuple{Int64, Vararg{Int64, N}} = size(arr)) where {T,N}
+    # @show "similar 1B"
+    na = similar(arr.parent, T, dims)
+    return na 
+end
+
+# This one is called for reduce operations to allocate like similar
+function Base.reducedim_initarray(arr::ShiftedArray, region, init, r::Type{R}) where R
+    # @show "reducedim"
+    # @show region
+    # @show init
+    res = invoke(Base.reducedim_initarray, Tuple{AbstractArray, typeof(region), typeof(init), typeof(r)}, arr, region,init,r)
+    return ShiftedArray(res, shifts(arr), default=default(arr))
 end
 
 @inline remove_sa_style(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R}}) where {N,S,R} = Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}(bc.f, bc.args, bc.axes) 
