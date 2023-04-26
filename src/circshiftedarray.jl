@@ -55,6 +55,7 @@ CircShiftedVector(v::AbstractVector, n = ()) = CircShiftedArray(v, n)
 end
 
 @inline function Base.setindex!(csa::CircShiftedArray{T,N,A,S}, v, i::Int) where {T,N,A,S}
+    # @show "si circ"
     setindex!(csa.parent, v, i)
 end
 

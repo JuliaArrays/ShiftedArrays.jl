@@ -253,6 +253,12 @@ end
     getindex(csa.parent, i)
 end
 
+@inline function Base.setindex!(csa::ShiftedArray{T,N,A,S,R}, v, i::Int) where {T,N,A,S,R}
+    # @show "si lin"
+    # note that we simply use the cyclic method, since the missing values are simply ignored
+    setindex!(csa.parent, v, i)
+end
+
 @inline function Base.setindex!(csa::ShiftedArray{T,N,A,S,R}, v, i::Vararg{Int,N}) where {T,N,A,S,R}
     # @show "si 1"
     # note that we simply use the cyclic method, since the missing values are simply ignored
@@ -489,11 +495,11 @@ function Base.isequal(csa::ShiftedArray{T,N,A,S,R}, arr::AbstractArray) where {T
     return ifelse(ismissing(res), true, res)
 end
 
-Base.isequal(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
-Base.isequal(csa1::ShiftedArray, csa2::ShiftedArray)  = invoke(isequal, Tuple{ShiftedArray, AbstractArray}, csa1, csa2)
-Base. ==(csa::ShiftedArray, arr::AbstractArray) = isequal(csa, arr)
-Base. ==(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
-Base. ==(csa1::ShiftedArray, csa2::ShiftedArray) = isequal(csa1,csa2)
+# Base.isequal(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
+# Base.isequal(csa1::ShiftedArray, csa2::ShiftedArray)  = invoke(isequal, Tuple{ShiftedArray, AbstractArray}, csa1, csa2)
+# Base. ==(csa::ShiftedArray, arr::AbstractArray) = isequal(csa, arr)
+# Base. ==(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
+# Base. ==(csa1::ShiftedArray, csa2::ShiftedArray) = isequal(csa1,csa2)
 
 function Base.copy(arr::ShiftedArray)
     collect(arr)
@@ -501,7 +507,66 @@ end
 
 Base.eltype(arr::ShiftedArray{T,N,A,S,R})  where {T,N,A,S,R<:CircShift} = eltype(parent(arr))
 
-# broadcasted(::coalesce, a::ShiftedArray, b) = broadcasted((a, b) -> a && b, a, b)
+# function Base.broadcasted(::typeof(coalesce), a::ShiftedArray, b)
+#     ac = ShiftedArray(a.parent, shifts(a), default=coalesce(default(a), b))
+#     return invoke(Base.broadcasted, Tuple{typeof(coalesce), AbstractArray, typeof(b)}, coalesce, ac, b)
+# end
+# function Base.broadcasted(::typeof(coalesce), a::ShiftedArray, b::AbstractArray)
+#     error("coalescing a shifted array with another array is intentionally not supported. Please collect before coalescing.")
+# end
+# function Base.broadcasted(::typeof(coalesce), a, b::ShiftedArray)
+#     error("coalescing with a  ShiftedArray  is intentionally not supported. Please collect before coalescing.")
+# end
+
+# all_comparisons = Union{typeof(isequal), typeof(==), typeof(<=), >=}
+
+# typeof(isequal)
+propagate_default(f,a,b) = f(a,b)
+propagate_default(f, a::Missing, b::AbstractArray) = missing
+propagate_default(f, a::AbstractArray, b::Missing) = missing
+propagate_default(f, a::Nothing, b::AbstractArray) = nothing
+propagate_default(f, a::AbstractArray, b::Nothing) = nothing
+#propagate_default(f, a::Base.Broadcast.Broadcasted, b) = Base.promote_op(Base.broadcast, typeof(f), typeof(a), typeof(b))
+#propagate_default(f, a, ::Base.Broadcast.Broadcasted) = a
+propagate_default(f, a::CircShift,b) = Circshift()
+propagate_default(f, a, b::CircShift) = Circshift()
+propagate_default(f, a::CircShift, b::CircShift) = Circshift()
+
+function Base.broadcasted(f::Function, a::ShiftedArray, b)
+    # @show "bc 1"
+    if isa(b, Base.Broadcast.Broadcasted)
+        @show "forced collection"
+        @show b
+        @show a = collect(a)
+        @show a
+        @show b = reshape(collect(b), size(b))
+        @show b
+        @show size(b)
+        return Base.broadcasted(f, a, b)
+#        invoke(Base.broadcasted, Tuple{typeof(f), typeof(a), typeof(b)}, f, a, b)
+    else
+        new_default = propagate_default(f,default(a), b)
+        a = ShiftedArray(a.parent, shifts(a), default=new_default)
+    end
+    return invoke(Base.broadcasted, Tuple{typeof(f), AbstractArray, typeof(b)}, f, a, b)
+end
+
+function Base.broadcasted(f::Function, b, a::ShiftedArray)
+    if isa(b, Base.Broadcast.Broadcasted)
+        a = collect(a)
+        b = collect(b)
+    else
+        new_default = propagate_default(f, b, default(a))
+        a = ShiftedArray(a.parent, shifts(a), default=new_default)
+    end
+    return invoke(Base.broadcasted, Tuple{typeof(f), typeof(b), AbstractArray}, f, b, a)
+end
+function Base.broadcasted(f::Function, b::ShiftedArray, a::ShiftedArray)
+    new_default = propagate_default(f,default(a), default(b))
+    ac = ShiftedArray(a.parent, shifts(a), default=new_default)
+    bc = ShiftedArray(a.parent, shifts(a), default=new_default)
+    return invoke(Base.broadcasted, Tuple{typeof(f), AbstractArray, AbstractArray}, f, ac, bc)
+end
 
 # # interaction with numbers should not still stay a CSA
 # Base.Broadcast.promote_rule(csa::Type{ShiftedArray}, na::Type{Number})  = typeof(csa)
@@ -513,7 +578,7 @@ Base.eltype(arr::ShiftedArray{T,N,A,S,R})  where {T,N,A,S,R<:CircShift} = eltype
 # Base.Broadcast.promote_shape(::Type{ShiftedArray{T,N,A,S}}, ::Type{<:AbstractArray}, ::Type{<:AbstractArray}) where {T,N,A<:AbstractArray,S} = ShiftedArray{T,N,A,S}
 # Base.Broadcast.promote_shape(::Type{ShiftedArray{T,N,A,S}}, ::Type{<:AbstractArray}, ::Type{<:Number}) where {T,N,A<:AbstractArray,S} = ShiftedArray{T,N,A,S}
 
-function Base.similar(arr::ShiftedArray, eltp::Type{T} = eltype(arr), dims::Tuple{Int64, Vararg{Int64, N}} = size(arr)) where {T,N}
+function Base.similar(arr::ShiftedArray, eltp::Type, dims::Tuple{Int64, Vararg{Int64, N}}) where {N}
     # @show "similar 1"
     na = similar(arr.parent, eltp, dims)
     # the results-type depends on whether the result size is the same or not. Same size can remain ShiftedArray.
@@ -523,11 +588,16 @@ function Base.similar(arr::ShiftedArray, eltp::Type{T} = eltype(arr), dims::Tupl
 end
 
 # specialized version for CircShiftArray which removes the Union Type
-function Base.similar(arr::ShiftedArray, eltp::Type{Union{CircShift,T}} = eltype(arr), dims::Tuple{Int64, Vararg{Int64, N}} = size(arr)) where {T,N}
+function Base.similar(arr::ShiftedArray, ::Type{Union{CircShift,T}}, dims::Tuple{Int64, Vararg{Int64, N}}) where {T,N}
     # @show "similar 1B"
     na = similar(arr.parent, T, dims)
     return na 
 end
+
+# ::Tuple{Int64, Vararg{Int64, N}}
+Base.similar(arr::ShiftedArray, eltp::Type) = similar(arr, eltp, size(arr))
+Base.similar(arr::ShiftedArray, dims::Tuple{Int64, Vararg{Int64, N}}) where {N} = similar(arr, eltype(arr), dims)
+Base.similar(arr::ShiftedArray) = similar(arr, eltype(arr), size(arr))
 
 # This one is called for reduce operations to allocate like similar
 function Base.reducedim_initarray(arr::ShiftedArray, region, init, r::Type{R}) where R

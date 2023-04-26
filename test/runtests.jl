@@ -14,8 +14,7 @@ using AbstractFFTs
     @test shifts(sv) == (-1,)
     svneg = ShiftedVector(v, -1, default = -100)
     @test default(svneg) == -100
-    # The coalesce has problems with the propagation!
-    # @test copy(svneg) == coalesce.(sv, -100)
+    @test copy(svneg) == coalesce.(sv, -100)
     @test isequal(sv[1:3], Union{Int64, Missing}[3, 5, 4])
     svnest = ShiftedVector(ShiftedVector(v, 1), 2)
     sv = ShiftedVector(v, 3)
@@ -46,7 +45,7 @@ end
                                11 15 missing missing;
                                12 16 missing missing])
     sneg = ShiftedArray(v, (0, -2), default = -100)
-    # @test all(sneg .== coalesce.(s, default(sneg)))
+    @test all(sneg .== coalesce.(s, default(sneg)))
     @test checkbounds(Bool, sv, 2, 2)
     @test !checkbounds(Bool, sv, 123, 123)
     svnest = ShiftedArray(ShiftedArray(v, (1, 1)), 2)
@@ -225,7 +224,7 @@ end
     diff2 = v .- ShiftedArrays.lag(v, 2)
     @test isequal(diff2, [missing, missing, 7, 9])
 
-    #@test all(ShiftedArrays.lag(v, 2, default = -100) .== coalesce.(ShiftedArrays.lag(v, 2), -100))
+    @test all(ShiftedArrays.lag(v, 2, default = -100) .== coalesce.(ShiftedArrays.lag(v, 2), -100))
 
     diff = v .- ShiftedArrays.lead(v)
     @test isequal(diff, [-2, -5, -4, missing])
@@ -233,7 +232,7 @@ end
     diff2 = v .- ShiftedArrays.lead(v, 2)
     @test isequal(diff2, [-7, -9, missing, missing])
 
-    #@test all(ShiftedArrays.lead(v, 2, default = -100) .== coalesce.(ShiftedArrays.lead(v, 2), -100))
+    @test all(ShiftedArrays.lead(v, 2, default = -100) .== coalesce.(ShiftedArrays.lead(v, 2), -100))
 
     @test ShiftedArrays.lag(ShiftedArrays.lag(v, 1), 2) === ShiftedArrays.lag(v, 3)
     @test ShiftedArrays.lead(ShiftedArrays.lead(v, 1), 2) === ShiftedArrays.lead(v, 3)
