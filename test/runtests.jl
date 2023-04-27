@@ -133,7 +133,7 @@ end
     @test sv === svnest
 end
 
-@testset "CircShiftedArray" begin
+@testset "ShiftedArray broadcast" begin
     # Some tests for the broadcasting functionality
     function test_broadcast(expr, src, sv)
         ca = circshift(src, sv)
@@ -167,6 +167,7 @@ end
         @test res2 == res_c
         @test collect(res2) == collect(res_c)
         @test sum(res2) == sum(res_c)
+        # test some shifted arrays
     end
     v = reshape(1:16, 4, 4)
     test_broadcast(x->x+1,v,(2,-1))
@@ -180,6 +181,13 @@ end
     test_broadcast(x->x+1,(@view v[1:2,1:2,4:6]),(2,0,3))
     v = rand(ComplexF32,5,4,3)
     test_broadcast(x->x+2+x*x,v,(2,-1,3))
+
+    v = reshape(1:16, 4, 4)
+    sv = ShiftedArray(v, (-2, 1))
+    bcv = sv .+ v
+    ref = [missing 8 16 24; missing 10 18 26; missing missing missing missing; missing missing missing missing]
+    @test isequal(bcv, ref)
+    @test coalesce.(sv .+ v, 100) == coalesce.(ref, 100)
 end
 
 @testset "circshift" begin
