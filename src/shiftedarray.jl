@@ -136,13 +136,29 @@ default(::Type{Nothing}) = nothing
 default(::Type{Val{N}}) where N = N
 # default(::T) where T = T
 default(::Type{ShiftedArray{T,N,A,S,R}}) where {T,N,A,S,R} = default(R)
-default(R::Type{CircShift}) = CircShift
+default(R::Type{CircShift}) = CircShift()
 default(R1, R2::Type{CircShift}) = R1()
 default(R1::Type{CircShift}, R2) = R2()
-default(R1::Type{CircShift}, R2::Type{CircShift}) = CircShift
+default(R1::Type{CircShift}, R2::Type{CircShift}) = CircShift()
+# default applied to a Broadcast calculates the default value
+function default(bc::Base.Broadcast.Broadcasted)
+    bcd = replace_by_default_broadcast(bc)
+    #@show bcd
+    dv = collect(bcd)
+    #@show dv
+    if prod(size(dv)) != 1
+        error("wrong size of dv")
+    end
+    return dv[1]
+end
+
+# find out, whether any of the arguments is a circ-shifted array
+has_circ_type(a) = false
+has_circ_type(a::CircShiftedArray) = true
+has_circ_type(bc::Base.Broadcast.Broadcasted) = any(has_circ_type.(bc.args))
 
 # low-level private constructor to handle type parameters
-function shiftedarray(v::AbstractArray{T, N}, shifts, r=default(v)()) where {T, N}
+function shiftedarray(v::AbstractArray{T, N}, shifts, r=default(v)) where {T, N}
     return ShiftedArray(v, padded_tuple(v, shifts); default=r)
 end
 
@@ -206,26 +222,25 @@ wrapids(shift::NTuple, dims::NTuple) = ntuple(i -> mod1(shift[i], dims[i]), leng
 invert_rng(s, sz) = wrapshift(sz .- s, sz)
 
 # define a new broadcast style. Stores dimensions (N), Shift(S) and default type (R)
-struct ShiftedArrayStyle{N,S,R} <: Base.Broadcast.AbstractArrayStyle{N} end
+struct ShiftedArrayStyle{N,S} <: Base.Broadcast.AbstractArrayStyle{N} end
 
 # convenient constructor
-ShiftedArrayStyle{N,S,R}(::Val{M}, t::Tuple) where {N,S,M,R} = ShiftedArrayStyle{max(N,M), Tuple{t...},R}()
+ShiftedArrayStyle{N,S}(::Val{M}, t::Tuple) where {N,S,M} = ShiftedArrayStyle{max(N,M), Tuple{t...}}()
 # make it known to the system
 function Base.Broadcast.BroadcastStyle(::Type{T}) where (T<: ShiftedArray)
-     ShiftedArrayStyle{ndims(T), shifts(T), to_default_type(default(T))}()
+     ShiftedArrayStyle{ndims(T), shifts(T)}()
 end
 # make subarrays (views) of ShiftedArray also broadcast inthe ShiftedArray style:
-Base.Broadcast.BroadcastStyle(::Type{SubArray{T,N,P,I,L}}) where {T,N,P<:ShiftedArray,I,L} = ShiftedArrayStyle{ndims(P), shifts(P), to_default_type(default(P))}()
-# Base.Broadcast.BroadcastStyle(::Type{T}) where (T2,N,P,I,L, T <: SubArray{T2,N,P,I,L})= ShiftedArrayStyle{ndims(P), shifts(p), to_default_type(default(p))}()
+Base.Broadcast.BroadcastStyle(::Type{SubArray{T,N,P,I,L}}) where {T,N,P<:ShiftedArray,I,L} = ShiftedArrayStyle{ndims(P), shifts(P)}()
 # ShiftedArray and default Array broadcast to ShiftedArray with max dimensions between the two
-Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S,R}, ::Base.Broadcast.DefaultArrayStyle{M}) where {N,S,M,R} = ShiftedArrayStyle{max(N,M),S,R}() #Broadcast.DefaultArrayStyle{CuArray}()
-function Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S1,R1}, ::ShiftedArrayStyle{M,S2,R2}) where {N,S1,R1,M,S2,R2}
+Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S}, ::Base.Broadcast.DefaultArrayStyle{M}) where {N,S,M} = ShiftedArrayStyle{max(N,M),S}() #Broadcast.DefaultArrayStyle{CuArray}()
+function Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S1}, ::ShiftedArrayStyle{M,S2}) where {N,S1,M,S2}
     if S1 != S2
         # maybe one could force materialization at this point instead.
         error("You currently cannot mix ShiftedArray of different shifts in a broadcasted expression.")
     end
     # Note that there are separate propagation rules for the default (everything wins over CircShift)
-    ShiftedArrayStyle{max(N,M),S1, default(R1,R2)}() #  # Broadcast.DefaultArrayStyle{CuArray}()
+    ShiftedArrayStyle{max(N,M),S1}() #  # Broadcast.DefaultArrayStyle{CuArray}()
 end 
 #Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{0,S},R, ::Base.Broadcast.DefaultArrayStyle{M}) where {S,M,R} = ShiftedArrayStyle{M,S,R} #Broadcast.DefaultArrayStyle{CuArray}()
 
@@ -282,26 +297,41 @@ end
     Base.Broadcast.materialize!(dest.parent, src.parent)
 end
 
-function Base.Broadcast.copyto!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R}}) where {N,S,R}
+function Base.Broadcast.copyto!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S}}) where {N,S}
     #@show "copyto!"
-     Base.Broadcast.materialize!(dest, bc)
+     res = Base.Broadcast.materialize!(dest, bc)
+     #@show typeof(dest)
+     return dest
 end
 
 # This copy operation is performed when an expression (in bc) needs to be evaluated
-function Base.Broadcast.copy(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R}}) where {N,S,R}
-    @show "copy broadcasted"
-    @show bc
-    ElType = Base.Broadcast.combine_eltypes(bc.f, bc.args)
-    bcd = replace_by_default_broadcast(bc)
-    @show dv = collect(bcd)[1]
-    res = similar(bc, ElType, size(bc); default=dv)
-    @show res
-    @show ElType
+function Base.Broadcast.copy(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S}}) where {N,S}
+    #@show "copy broadcasted"
+    #@show bc
+    #@show to_tuple(S)
+    if only_shifted(bc)
+        ElType = Base.Broadcast.combine_eltypes(bc.f, bc.args)
+        #@show ElType
+        # since there are only shifted arrays we can use the default
+        if has_circ_type(bc)
+            res = similar(bc, ElType, size(bc); shifts = to_tuple(S), default = CircShift)
+        else
+            # calculate the default here
+            res = similar(bc, ElType, size(bc); shifts = to_tuple(S), default = default(bc))
+        end
+    else
+        ElType = Base.Broadcast.combine_eltypes(bc.f, bc.args)
+        #@show ElType
+        bcr = remove_sa_broadcast(bc)
+        res = similar(bcr, ElType, size(bcr))
+    end
+    #@show res
+    #@show typeof(res)
     return copyto!(res, bc)
 end
 
 # get_eltype(bc::Base.Broadcast.Broadcasted) = Base.Broadcast.combine_eltypes(bc.f, bc.args)
-# function get_eltype(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R}})  where {N,S,R}
+# function get_eltype(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S}})  where {N,S}
 #     eltypes = get_eltype.(bc.args)
 #     @show eltypes
 #     Base.Broadcast.combine_eltypes(bc.f, eltypes)
@@ -311,54 +341,65 @@ end
 # end
 
 # remove all the (circ-)shift part if all shifts are the same (or constants)
-# @inline function materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrays.ShiftedArrayStyle{N, S, R}}) where {T, N, A, S, R, N, S, R}
-@inline function Base.Broadcast.materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N, S, R}}) where {T, N, A, S, R}
-    @show "materialize! cs1"
-    # @show remove_sa_style(bc)
+# @inline function materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrays.ShiftedArrayStyle{N, S}}) where {T, N, A, S, N, S, R}
+@inline function Base.Broadcast.materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N, S}}) where {T, N, A, S, R}
+    # @show "materialize! cs1"
+    # if only_shifted(bc)
+    #     # fall back to standard assignment
+    #     #@show "use raw"
+    #     # to avoid calling the method defined below, we need to use `invoke`:
+    #     #@show bc
+    #     #@show remove_sa_style(bc)
+    #     #@show remove_sa_broadcast(bc)
+    #     return invoke(Base.Broadcast.materialize!, Tuple{A, Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}}, dest.parent, remove_sa_broadcast(bc)) 
+    # else
+    #     # get all not-shifted arrays and apply the materialize operations piecewise using array views
+        return materialize_checkerboard!(dest.parent, bc, Tuple(1:N), shifts(dest), true; array_type=R)
+    # end
     #@show A
-    invoke(Base.Broadcast.materialize!, Tuple{A, Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}}, dest.parent, remove_sa_broadcast(bc))
+    # invoke(Base.Broadcast.materialize!, Tuple{A, Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}}, dest.parent, remove_sa_broadcast(bc))
     # Base.Broadcast.materialize!(dest, remove_sa_style(bc))
     return dest
 end
 
 # we cannot specialize the Broadcast style here, since the rhs may not contain a ShiftedArray and still wants to be assigned
 @inline function Base.Broadcast.materialize!(dest::ShiftedArray{T,N,A,S,R}, bc::Base.Broadcast.Broadcasted{BT}) where {T,N,A,S,R,BT}
-    @show "materialize! cs2"
-    if only_shifted(bc)
-        # fall back to standard assignment
-        #@show "use raw"
-        # to avoid calling the method defined below, we need to use `invoke`:
-        invoke(Base.Broadcast.materialize!, Tuple{AbstractArray, Base.Broadcast.Broadcasted}, dest, bc) 
-    else
+    #@show "materialize! cs2"
+    # if only_shifted(bc)
+    #     # fall back to standard assignment
+    #     #@show "use raw"
+    #     # to avoid calling the method defined below, we need to use `invoke`:
+    #     invoke(Base.Broadcast.materialize!, Tuple{AbstractArray, Base.Broadcast.Broadcasted}, dest, bc) 
+    # else
         # get all not-shifted arrays and apply the materialize operations piecewise using array views
         materialize_checkerboard!(dest.parent, bc, Tuple(1:N), shifts(dest), true; array_type=R)
-    end
+    #end
     return dest
 end
 
 # for ambiguous conflict resolution
-@inline function Base.Broadcast.materialize!(dest::ShiftedArray{T,N,A,S,R}, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N2,S,R2}}) where {T,N,A,S,R,N2,R2}
-    @show "materialize! cs4"
-    if only_shifted(bc)
-        # fall back to standard assignment
-        #@show "use raw"
-        # to avoid calling the method defined below, we need to use `invoke`:
-        invoke(Base.Broadcast.materialize!, Tuple{AbstractArray, Base.Broadcast.Broadcasted}, dest, bc) 
-    else
+@inline function Base.Broadcast.materialize!(dest::ShiftedArray{T,N,A,S,R}, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N2,S}}) where {T,N,A,S,R,N2}
+    #@show "materialize! cs4"
+    # if only_shifted(bc)
+    #     # fall back to standard assignment
+    #     #@show "use raw"
+    #     # to avoid calling the method defined below, we need to use `invoke`:
+    #     invoke(Base.Broadcast.materialize!, Tuple{AbstractArray, Base.Broadcast.Broadcasted}, dest, bc) 
+    # else
         # get all not-shifted arrays and apply the materialize operations piecewise using array views
-        materialize_checkerboard!(dest.parent, bc, Tuple(1:N), wrapshift(size(dest) .- shifts(dest), size(dest)), true)
-    end
+        materialize_checkerboard!(dest.parent, bc, Tuple(1:N), wrapshift(size(dest) .- shifts(dest), size(dest)), true; default=R)
+    # end
     return dest
 end
 
-@inline function Base.Broadcast.materialize!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R}}) where {N,S,R}
-    materialize_checkerboard!(dest, bc, Tuple(1:N), to_tuple(S), false; array_type=R)
+@inline function Base.Broadcast.materialize!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S}}) where {N,S}
+    materialize_checkerboard!(dest, bc, Tuple(1:N), to_tuple(S), false; array_type=Nothing)
     return dest
 end
 
 # This collect function needs to be defined to prevent the linear indexing to take over and just copy the raw (not shifted) data.
 function Base.collect(src::ShiftedArray{T,N,A,S,R}) where {T,N,A,S,R}
-    @show "collect"
+    #@show "collect"
     src = if (isa(src.parent,ShiftedArray))
         ShiftedArray(collect(src.parent), shifts(src); default=default(src))
     else
@@ -394,9 +435,9 @@ this function subdivides the array into tiles, which each needs to be processed 
 
 """
 function materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array=false; array_type=CircShift) 
-    @show "materialize_checkerboard"
-    @show dest_is_cs_array
-    @show array_type
+    #@show "materialize_checkerboard"
+    # @show dest_is_cs_array
+    # @show array_type
     dest = refine_view(dest)
     # gets Tuples of Tuples of 1D ranges (low and high) for each dimension
     cs_rngs, ns_rngs = generate_shift_ranges(dest, wrapshift(size(dest) .- myshift, size(dest)))
@@ -417,11 +458,16 @@ function materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array=fal
 
         bc1 = split_array_broadcast(bc, ns_rng, cs_rng)
         if (prod(size(dst_view)) > 0)
-            if (array_type <: CircShift || Tuple(n) == nonflipped)
+            if (Tuple(n) == nonflipped) # array_type <: CircShift || 
                 Base.Broadcast.materialize!(dst_view, bc1)
             else
-                bc2 = split_array_broadcast(bcd, ns_rng, cs_rng)
-                Base.Broadcast.materialize!(dst_view, bc2)
+                # check if there is any need to calculate the other quadrants.
+                # @show typeof(dest)
+                if (isa(dest, CircShiftedArray) || ! isa(dest, ShiftedArray))
+                    bc2 = split_array_broadcast(bcd, ns_rng, cs_rng)
+                    # @show bc2
+                    Base.Broadcast.materialize!(dst_view, bc2)
+                end
             end
         end
         # dst_view .= N
@@ -429,7 +475,7 @@ function materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array=fal
     end
 end
 function materialize_checkerboard!(dest::ShiftedArray{T,N,A,S,R}, bc, dims, myshift, dest_is_cs_array=(R<:CircShift); array_type=R) where {T,N,A,S,R}
-    @show "materialize_checkerboard SA"
+    #@show "materialize_checkerboard SA"
     materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array; array_type=array_type) 
 end
 
@@ -482,7 +528,7 @@ function remove_sa_broadcast(bc::Base.Broadcast.Broadcasted)
     return res
 end
 
-# leave all circshifted arrays but replace the shifted array by a single default number
+# leave all circshifted arrays in place but replace the shifted array by a single default number
 @inline replace_by_default_broadcast(arg) = arg
 @inline replace_by_default_broadcast(sa::ShiftedArray{T,N,A,S,R}) where {T,N,A,S,R} = ifelse(R<:CircShift, sa, default(sa))
 function replace_by_default_broadcast(bc::Base.Broadcast.Broadcasted)
@@ -534,7 +580,7 @@ refine_view(csa::AbstractArray) = csa
 
 # these array isequal and == functions are defined to be compatible with the previous definition of equality (equal values only)
 function Base.isequal(csa::ShiftedArray{T,N,A,S,R}, arr::AbstractArray) where {T,N,A,S,R}
-    @show "is equal"
+    #@show "is equal"
     if isequal(Ref(csa), Ref(arr))
         return true
     end
@@ -547,7 +593,7 @@ function Base.isequal(arr::ShiftedArray, csa::ShiftedArray)
     if isequal(Ref(csa), Ref(arr))
         return true
     end
-    if isequal(default(arr), CircShift) && isequal(default(csa), CircShift) && shifts(arr)==shifts(csa)
+    if isequal(default(arr), CircShift()) && isequal(default(csa), CircShift()) && shifts(arr)==shifts(csa)
         return isequal(arr.parent, csa.parent)
     end
     return all(isequal.(csa, arr))
@@ -567,7 +613,7 @@ function Base. ==(arr::ShiftedArray, csa::ShiftedArray)
     if isequal(Ref(csa), Ref(arr))
         return true
     end
-    if default(arr)==CircShift && default(csa) == CircShift && shifts(arr)==shifts(csa)
+    if default(arr)==CircShift() && default(csa) == CircShift() && shifts(arr)==shifts(csa)
         return arr.parent == csa.parent
     end
     return all(.==(csa, arr))
@@ -609,20 +655,15 @@ propagate_default(f, a::Nothing, b::AbstractArray) = nothing
 propagate_default(f, a::AbstractArray, b::Nothing) = nothing
 #propagate_default(f, a::Base.Broadcast.Broadcasted, b) = Base.promote_op(Base.broadcast, typeof(f), typeof(a), typeof(b))
 #propagate_default(f, a, ::Base.Broadcast.Broadcasted) = a
-propagate_default(f, a::CircShift,b) = Circshift()
-propagate_default(f, a, b::CircShift) = Circshift()
-propagate_default(f, a::CircShift, b::CircShift) = Circshift()
+propagate_default(f, a::CircShift,b) = CircShift()
+propagate_default(f, a, b::CircShift) = CircShift()
+propagate_default(f, a::CircShift, b::CircShift) = CircShift()
 
 function Base.broadcasted(f::Function, a::ShiftedArray, b::Number)
     # @show "bc 1"
     if isa(b, Base.Broadcast.Broadcasted)
-        @show "forced collection"
-        @show b
-        @show a = collect(a)
-        @show a
-        @show b = reshape(collect(b), size(b))
-        @show b
-        @show size(b)
+        a = collect(a)
+        b = reshape(collect(b), size(b))
         return Base.broadcasted(f, a, b)
 #        invoke(Base.broadcasted, Tuple{typeof(f), typeof(a), typeof(b)}, f, a, b)
     else
@@ -689,10 +730,10 @@ function Base.reducedim_initarray(arr::ShiftedArray, region, init, r::Type{R}) w
     return ShiftedArray(res, shifts(arr), default=default(arr))
 end
 
-@inline remove_sa_style(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R}}) where {N,S,R} = Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}(bc.f, bc.args, bc.axes) 
+@inline remove_sa_style(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S}}) where {N,S} = Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}(bc.f, bc.args, bc.axes) 
 @inline remove_sa_style(bc::Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}) where {N} = bc
 
-function Base.similar(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R},Ax,F,Args}, et::ET, dims::Any; default=default(R)) where {N,S,R,ET,Ax,F,Args}
+function Base.similar(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S},Ax,F,Args}, et::ET, dims::Any; shifts=shifts(bc), default=default(bc)) where {N,S,ET,Ax,F,Args}
     #@show "similar 2"
     # remove the ShiftedArrayStyle from broadcast to call the original "similar" function 
     bc_type = Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N},Ax,F,Args}
@@ -703,7 +744,7 @@ function Base.similar(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S,R},Ax
         #@show "only shifted"
         # return a ShiftedArray. This makes operations much faster since linear indexing can be used
         # @show default(R)
-        return ShiftedArray(res, to_tuple(S); default=default)
+        return ShiftedArray(res, shifts; default=default)
     else
         return res
     end
