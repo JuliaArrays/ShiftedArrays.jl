@@ -139,9 +139,9 @@ end
         ca = circshift(src, sv)
         csa = CircShiftedArray(src, sv)
         @test eltype(ca) == eltype(csa)
-        #@test ca == csa
+        @test ca == csa
         # approx is needed since the summing order is slightly different in both cases
-        #@test sum(ca) ≈ sum(csa)
+        @test sum(ca) ≈ sum(csa)
         for d = 1:ndims(src)
             @test sum(ca, dims=d) ≈ sum(csa, dims=d)
         end
@@ -185,6 +185,12 @@ end
     v = reshape(1:16, 4, 4)
     sv = ShiftedArray(v, (-2, 1))
     bcv = sv .+ v
+    sv2 = ShiftedArray(v, (-1, 1))
+    # mixing a shifted an not-shifted vector yields no shifted vector
+    @test !isa(bcv, ShiftedArray)
+    @test isa(sv .+ sv, ShiftedArray)
+    @test_throws "cannot mix" (isa(sv .+ sv2, ShiftedArray))
+
     ref = [missing 8 16 24; missing 10 18 26; missing missing missing missing; missing missing missing missing]
     @test isequal(bcv, ref)
     @test coalesce.(sv .+ v, 100) == coalesce.(ref, 100)

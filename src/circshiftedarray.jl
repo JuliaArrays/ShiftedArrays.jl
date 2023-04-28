@@ -48,6 +48,9 @@ CircShiftedVector(v::AbstractVector, n = ()) = CircShiftedArray(v, n)
 # CircShiftedVector(v::AbstractVector, s = ()) = ShiftedArray(v, s)
 # CircShiftedVector(v::AbstractVector, s::Number) = ShiftedArray(v, (s,))
 
+has_circ_type(a::CircShiftedArray) = true
+
+
 # mod1 avoids first subtracting one and then adding one
 @inline function Base.getindex(csa::CircShiftedArray{T,N,A,S}, i::Vararg{Int,N}) where {T,N,A,S} 
     # @show "gi circ"
