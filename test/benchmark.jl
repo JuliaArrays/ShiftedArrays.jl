@@ -14,7 +14,7 @@ sh = (335, 444)
 sv = ShiftedArray(v, sh)
 cv = CircShiftedArray(v, sh)
 
-# timings stated for Dell Laptop XPS 15 (i7 11800)
+# timings stated for Dell Laptop XPS 15 (i7 11800) on Windows 10
 @btime q = $sv .+ 5.0 # bc version: 1.48 ms, CuArray bc: 0.016 ms, old version: 2.73 ms
 res = sv .+ 5.0
 
