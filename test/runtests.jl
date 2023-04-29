@@ -227,6 +227,9 @@ end
 
     @test (2, 2, 0) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2)) # Fourier center is at (2, 3, 0)
     @test (2, 2, 3) == ShiftedArrays.ft_center_diff((4, 5, 6), (1, 2, 3)) # Fourier center is at (2, 3, 4)
+    # ensure that circ-shifts with zero are converted back to ordinary arrays
+    @test isa(ShiftedArrays.ifftshift(ShiftedArrays.fftshift(randn(10,11,12))), Array)
+    @test isa(ShiftedArrays.fftshift(ShiftedArrays.ifftshift(randn(11,12,10))), Array)
 
 end
 

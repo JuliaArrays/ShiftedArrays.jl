@@ -233,7 +233,10 @@ end
 # make subarrays (views) of ShiftedArray also broadcast inthe ShiftedArray style:
 Base.Broadcast.BroadcastStyle(::Type{SubArray{T,N,P,I,L}}) where {T,N,P<:ShiftedArray,I,L} = ShiftedArrayStyle{ndims(P), shifts(P)}()
 # ShiftedArray and default Array broadcast to ShiftedArray with max dimensions between the two
-Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S}, ::Base.Broadcast.DefaultArrayStyle{M}) where {N,S,M} = ShiftedArrayStyle{max(N,M),S}() #Broadcast.DefaultArrayStyle{CuArray}()
+Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S}, ::Base.Broadcast.DefaultArrayStyle{M}) where {N,S,M} = ShiftedArrayStyle{max(N,M),S}() 
+Base.Broadcast.BroadcastStyle(::Base.Broadcast.DefaultArrayStyle{M}, ::ShiftedArrayStyle{N,S}) where {M,N,S} = ShiftedArrayStyle{max(N,M),S}() 
+Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S}, ::Base.Broadcast.AbstractArrayStyle{M}) where {N,S,M} = ShiftedArrayStyle{max(N,M),S}() 
+Base.Broadcast.BroadcastStyle(::Base.Broadcast.AbstractArrayStyle{M}, ::ShiftedArrayStyle{N,S}) where {M,N,S} = ShiftedArrayStyle{max(N,M),S}() 
 function Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S1}, ::ShiftedArrayStyle{M,S2}) where {N,S1,M,S2}
     #@show "Style SA SA"
     Sres = S1
@@ -247,7 +250,6 @@ function Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{N,S1}, ::ShiftedArray
     # Note that there are separate propagation rules for the default (everything wins over CircShift)
     ShiftedArrayStyle{max(N,M),Sres}() #  # Broadcast.DefaultArrayStyle{CuArray}()
 end 
-#Base.Broadcast.BroadcastStyle(::ShiftedArrayStyle{0,S},R, ::Base.Broadcast.DefaultArrayStyle{M}) where {S,M,R} = ShiftedArrayStyle{M,S,R} #Broadcast.DefaultArrayStyle{CuArray}()
 
 @inline Base.size(csa::ShiftedArray) = size(csa.parent)
 @inline Base.size(csa::ShiftedArray, d::Int) = size(csa.parent, d)
@@ -268,7 +270,7 @@ end
 
 # linear indexing ignores the shifts
 @inline function Base.getindex(csa::ShiftedArray{T,N,A,S,R}, i::Int) where {T,N,A,S,R} 
-    #@show "gi 0"
+    # @show "gi 0"
     getindex(csa.parent, i)
 end
 
@@ -303,7 +305,7 @@ end
 
 function Base.Broadcast.copyto!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S}}) where {N,S}
     #@show "copyto!"
-     res = Base.Broadcast.materialize!(dest, bc)
+     Base.Broadcast.materialize!(dest, bc)
      #@show typeof(dest)
      return dest
 end
@@ -347,7 +349,7 @@ end
 # remove all the (circ-)shift part if all shifts are the same (or constants)
 # @inline function materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrays.ShiftedArrayStyle{N, S}}) where {T, N, A, S, N, S, R}
 @inline function Base.Broadcast.materialize!(dest::ShiftedArray{T, N, A, S, R}, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N, S}}) where {T, N, A, S, R}
-    # @show "materialize! cs1"
+    #@show "materialize! cs1"
     # if only_shifted(bc)
     #     # fall back to standard assignment
     #     #@show "use raw"
@@ -398,6 +400,8 @@ end
 end
 
 @inline function Base.Broadcast.materialize!(dest::AbstractArray, bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S}}) where {N,S}
+    #@show "materialize!"
+    #@show typeof(dest)
     materialize_checkerboard!(dest, bc, Tuple(1:N), to_tuple(S), false; array_type=Nothing)
     return dest
 end
@@ -479,7 +483,7 @@ function materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array=fal
     end
 end
 function materialize_checkerboard!(dest::ShiftedArray{T,N,A,S,R}, bc, dims, myshift, dest_is_cs_array=(R<:CircShift); array_type=R) where {T,N,A,S,R}
-    #@show "materialize_checkerboard SA"
+    @show "materialize_checkerboard SA"
     materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array; array_type=array_type) 
 end
 
@@ -735,7 +739,7 @@ function Base.reducedim_initarray(arr::ShiftedArray, region, init, r::Type{R}) w
 end
 
 function Base.similar(bc::Base.Broadcast.Broadcasted{ShiftedArrayStyle{N,S},Ax,F,Args}, et::ET, dims::Any; shifts=shifts(bc), default=default(bc)) where {N,S,ET,Ax,F,Args}
-    # @show "similar 2"
+    #@show "similar 2"
     # remove the ShiftedArrayStyle from broadcast to call the original "similar" function 
     bc_tmp = remove_sa_broadcast(bc) #Base.Broadcast.Broadcasted{Base.Broadcast.DefaultArrayStyle{N}}(bc.f, bc.args, bc.axes)
     res = invoke(Base.Broadcast.similar, Tuple{typeof(bc_tmp),ET,Any}, bc_tmp, et, dims)

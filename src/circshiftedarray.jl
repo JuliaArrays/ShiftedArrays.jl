@@ -35,7 +35,14 @@ julia> copy(s)
 """
 const CircShiftedArray{T, N, A<:AbstractArray, S} = ShiftedArray{T, N, A, S, CircShift} 
 CircShiftedArray(p::AbstractArray, n=()) = ShiftedArray(p, map(mod, padded_tuple(p, n), size(p)); default=CircShift())
-CircShiftedArray(p::ShiftedArray, n=()) = ShiftedArray(p, map(mod, padded_tuple(p, n), size(p)); default=CircShift())
+function CircShiftedArray(p::ShiftedArray, n=()) 
+    ns = map(mod, padded_tuple(p, n) .+ to_tuple(shifts(typeof(p))), size(p))
+    if all(ns.==0)
+        return p.parent
+    else
+        return ShiftedArray(p.parent, ns; default=CircShift())
+    end
+end
 
 """
     CircShiftedVector{T, S<:AbstractArray}
