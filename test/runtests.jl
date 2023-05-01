@@ -193,7 +193,9 @@ end
     # mixing a shifted an not-shifted vector yields no shifted vector
     @test !isa(bcv, ShiftedArray)
     @test isa(sv .+ sv, ShiftedArray)
-    @test_throws "shifts ((-2, 1) and (-1, 1)) of both arrays need to be equal." (isa(sv .+ sv2, ShiftedArray))
+
+    # this test is disabled, since Julia 1.5 has trouble with the syntax in @test_throws
+    #@test_throws "shifts ((-2, 1) and (-1, 1)) of both arrays need to be equal." (isa(sv .+ sv2, ShiftedArray))
 
     ref = [missing 8 16 24; missing 10 18 26; missing missing missing missing; missing missing missing missing]
     @test isequal(bcv, ref)
