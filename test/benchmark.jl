@@ -3,7 +3,7 @@ using BenchmarkTools
 sz = (1024,1024)
 
 v = rand(sz...);
-useCuda = true
+useCuda = false
 if useCuda
     using CUDA
     CUDA.allowscalar(false);
@@ -24,8 +24,8 @@ sv = ShiftedArray(v, sh, default=0.0)
 resn = copy(v)
 @btime $resn .= $sv .+ 5.0 # bc version: 0.28 ms, CuArray bc: 0.020 ms, old version: 0.42 ms
 
-@btime $res .= $sv .+ 5.0 .* $v .*$sv # bc version: 0.445 ms, CuArray bc: 0.039 ms, old version: 1.65 ms
+@btime $res .= $sv .+ 5.0 .* $v .*$sv # bc version: 0.727 ms, CuArray bc: 0.039 ms, old version: 1.65 ms
 
 svi = ShiftedArrays.ifftshift(v)
-@btime $resn .= $svi .+ 5.0 .* $v .*$svi # bc version: 2.41 ms, CuArray bc: 0.029 ms, old version: 3.98 ms
+@btime $resn .= $svi .+ 5.0 .* $v .*$svi # bc version: 0.53 ms, CuArray bc: 0.029 ms, old version: 3.98 ms
 @btime $resn .= ShiftedArrays.fftshift($svi .+ 5.0 .* $v .*$svi) # bc version: 2.41 ms,  CuArray bc: 0.050 ms, old version: 3.98 ms

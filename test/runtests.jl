@@ -7,29 +7,31 @@ using AbstractFFTs
     sv = ShiftedVector(v, -1)
     @test isequal(sv, ShiftedVector(v, (-1,)))   
     @test length(sv) == 4
-    @test all(sv[1:3] .== [3, 5, 4])
+    # causes individual getindex:
+    @test all(sv[1:3] .== [3, 5, 4]) 
     @test ismissing(sv[4])
-    diff = v .- sv
+    diff = v .- sv;
     @test isequal(diff, [-2, -2, 1, missing])
     @test shifts(sv) == (-1,)
-    svneg = ShiftedVector(v, -1, default = -100)
+    svneg = ShiftedVector(v, -1, default = -100);
     @test default(svneg) == -100
     @test copy(svneg) == coalesce.(sv, -100)
-    @test isequal(sv[1:3], Union{Int64, Missing}[3, 5, 4])
-    svnest = ShiftedVector(ShiftedVector(v, 1), 2)
-    sv = ShiftedVector(v, 3)
+    # causes individual getindex:
+    @test isequal(sv[1:3], Union{Int64, Missing}[3, 5, 4]) 
+    svnest = ShiftedVector(ShiftedVector(v, 1), 2);
+    sv = ShiftedVector(v, 3);
     @test sv === svnest
-    sv = ShiftedVector(v, 2, default = nothing)
-    sv1 = ShiftedVector(sv, 1)
-    sv2 = ShiftedVector(sv, 1, default = 0)
+    sv = ShiftedVector(v, 2, default = nothing);
+    sv1 = ShiftedVector(sv, 1);
+    sv2 = ShiftedVector(sv, 1, default = 0);
     @test isequal(collect(sv1), [nothing, nothing, nothing, 1])
     @test isequal(collect(sv2), [0, nothing, nothing, 1])
 end
 
 @testset "ShiftedArray" begin
-    v = reshape(1:16, 4, 4)
+    v = reshape(1:16, 4, 4);
     @test all(v .== ShiftedArray(v))
-    sv = ShiftedArray(v, (-2, 0))
+    sv = ShiftedArray(v, (-2, 0));
     @test length(sv) == 16
     @test sv[1, 3] == 11
     @test ismissing(sv[3, 3])
@@ -39,21 +41,21 @@ end
     #@test isequal(@inferred(ShiftedArray(v)), @inferred(ShiftedArray(v, (0, 0))))
     @test isequal(ShiftedArray(v, (2,)), ShiftedArray(v, 2))
     @test isequal(ShiftedArray(v), ShiftedArray(v, (0, 0)))
-    s = ShiftedArray(v, (0, -2))
+    s = ShiftedArray(v, (0, -2));
     @test isequal(collect(s), [ 9 13 missing missing;
                                10 14 missing missing;
                                11 15 missing missing;
                                12 16 missing missing])
-    sneg = ShiftedArray(v, (0, -2), default = -100)
+    sneg = ShiftedArray(v, (0, -2), default = -100);
     @test all(sneg .== coalesce.(s, default(sneg)))
     @test checkbounds(Bool, sv, 2, 2)
     @test !checkbounds(Bool, sv, 123, 123)
-    svnest = ShiftedArray(ShiftedArray(v, (1, 1)), 2)
-    sv = ShiftedArray(v, (3, 1))
+    svnest = ShiftedArray(ShiftedArray(v, (1, 1)), 2);
+    sv = ShiftedArray(v, (3, 1));
     @test sv === svnest
-    sv = ShiftedArray(v, 2, default = nothing)
-    sv1 = ShiftedArray(sv, (1, 1))
-    sv2 = ShiftedArray(sv, (1, 1), default = 0)
+    sv = ShiftedArray(v, 2, default = nothing);
+    sv1 = ShiftedArray(sv, (1, 1));
+    sv2 = ShiftedArray(sv, (1, 1), default = 0);
     @test isequal(collect(sv1), [nothing   nothing   nothing   nothing
                                  nothing   nothing   nothing   nothing
                                  nothing   nothing   nothing   nothing
@@ -65,7 +67,7 @@ end
 end
 
 @testset "padded_tuple" begin
-    v = rand(2, 2)
+    v = rand(2, 2);
     @test (1, 0) == @inferred ShiftedArrays.padded_tuple(v, 1)
     @test (0, 0) == @inferred ShiftedArrays.padded_tuple(v, ())
     @test (3, 0) == @inferred ShiftedArrays.padded_tuple(v, (3,))
@@ -136,19 +138,21 @@ end
 @testset "ShiftedArray broadcast" begin
     # Some tests for the broadcasting functionality
     function test_broadcast(expr, src, sv)
-        ca = circshift(src, sv)
-        csa = CircShiftedArray(src, sv)
+        ca = circshift(src, sv);
+        csa = CircShiftedArray(src, sv);
         @test eltype(ca) == eltype(csa)
         @test ca == csa
         # approx is needed since the summing order is slightly different in both cases
         @test sum(ca) ≈ sum(csa)
         for d = 1:ndims(src)
+            # approx causes individual getindex:
             @test sum(ca, dims=d) ≈ sum(csa, dims=d)
         end
         res = expr.(ca)
         res_c = expr.(csa)
         @test res_c == res
         for d = 1:ndims(src)
+            # approx causes individual getindex:
             @test sum(expr.(ca), dims=d) ≈ sum(expr.(csa), dims=d)
         end
         res_c = expr.(csa) .+ src
@@ -182,14 +186,14 @@ end
     v = rand(ComplexF32,5,4,3)
     test_broadcast(x->x+2+x*x,v,(2,-1,3))
 
-    v = reshape(1:16, 4, 4)
-    sv = ShiftedArray(v, (-2, 1))
+    v = reshape(1:16, 4, 4);
+    sv = ShiftedArray(v, (-2, 1));
     bcv = sv .+ v
-    sv2 = ShiftedArray(v, (-1, 1))
+    sv2 = ShiftedArray(v, (-1, 1));
     # mixing a shifted an not-shifted vector yields no shifted vector
     @test !isa(bcv, ShiftedArray)
     @test isa(sv .+ sv, ShiftedArray)
-    @test_throws "cannot mix" (isa(sv .+ sv2, ShiftedArray))
+    @test_throws "shifts ((-2, 1) and (-1, 1)) of both arrays need to be equal." (isa(sv .+ sv2, ShiftedArray))
 
     ref = [missing 8 16 24; missing 10 18 26; missing missing missing missing; missing missing missing missing]
     @test isequal(bcv, ref)

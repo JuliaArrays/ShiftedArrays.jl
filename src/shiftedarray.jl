@@ -258,7 +258,7 @@ end
 @inline Base.parent(csa::ShiftedArray) = csa.parent
 
 @inline function Base.getindex(s::ShiftedArray{<:Any, N, <:Any, <:Any, <:Any}, x::Vararg{Int, N}) where {N}
-    # @show "gi shifted"
+    #@show "gi shifted"
     @boundscheck checkbounds(s, x...)
     v, i = parent(s), offset(shifts(s), x)
     return if checkbounds(Bool, v, i...)
@@ -270,7 +270,7 @@ end
 
 # linear indexing ignores the shifts
 @inline function Base.getindex(csa::ShiftedArray{T,N,A,S,R}, i::Int) where {T,N,A,S,R} 
-    # @show "gi 0"
+    #@show "gi 0"
     getindex(csa.parent, i)
 end
 
@@ -468,13 +468,13 @@ function materialize_checkerboard!(dest, bc, dims, myshift, dest_is_cs_array=fal
         bc1 = split_array_broadcast(bc, ns_rng, cs_rng)
         if (prod(size(dst_view)) > 0)
             if (Tuple(n) == nonflipped) # array_type <: CircShift || 
-                Base.Broadcast.materialize!(dst_view, bc1)
+                @inbounds Base.Broadcast.materialize!(dst_view, bc1)
             else
                 # check if there is any need to calculate the other quadrants.
                 # @show typeof(dest)
                 if (! isa(dest, ShiftedArray) || default(dest) == CircShift())
                     bc2 = split_array_broadcast(bcd, ns_rng, cs_rng)
-                    Base.Broadcast.materialize!(dst_view, bc2)
+                    @inbounds Base.Broadcast.materialize!(dst_view, bc2)
                 end
             end
         end
@@ -587,7 +587,7 @@ end
 refine_view(csa::AbstractArray) = csa
 
 # these array isequal and == functions are defined to be compatible with the previous definition of equality (equal values only)
-function Base.isequal(csa::ShiftedArray{T,N,A,S,R}, arr::AbstractArray) where {T,N,A,S,R}
+function Base.isequal(csa::ShiftedArray, arr::AbstractArray)
     #@show "is equal"
     if isequal(Ref(csa), Ref(arr))
         return true
@@ -597,7 +597,6 @@ function Base.isequal(csa::ShiftedArray{T,N,A,S,R}, arr::AbstractArray) where {T
 end
 Base.isequal(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
 function Base.isequal(arr::ShiftedArray, csa::ShiftedArray)
-    #@show "isequal SA SA"
     if isequal(Ref(csa), Ref(arr))
         return true
     end
@@ -607,8 +606,9 @@ function Base.isequal(arr::ShiftedArray, csa::ShiftedArray)
     return all(isequal.(csa, arr))
 end
 
+# cases for views of ShiftedArray should still be added at some point.
+
 function Base. ==(csa::ShiftedArray, arr::AbstractArray) 
-    #@show "=="
     if isequal(Ref(csa), Ref(arr))
         return true
     end
@@ -691,11 +691,16 @@ function Base.broadcasted(f::Function, b::Number, a::ShiftedArray)
     end
     return invoke(Base.broadcasted, Tuple{typeof(f), typeof(b), AbstractArray}, f, b, a)
 end
-function Base.broadcasted(f::Function, b::ShiftedArray, a::ShiftedArray)
+
+function Base.broadcasted(f::Function, a::ShiftedArray, b::ShiftedArray)
     new_default = propagate_default(f,default(a), default(b))
-    ac = ShiftedArray(a.parent, shifts(a), default=new_default)
-    bc = ShiftedArray(a.parent, shifts(b), default=new_default)
-    return invoke(Base.broadcasted, Tuple{typeof(f), AbstractArray, AbstractArray}, f, ac, bc)
+    if shifts(a) != shifts(b)
+        error("shifts ($(shifts(a)) and $(shifts(b))) of both arrays need to be equal.")
+    end
+    raw = f.(a.parent, b.parent)
+    res = ShiftedArray(raw, shifts(a), default=new_default)
+    # @show "broadcasted 1"
+    return res
 end
 
 # # interaction with numbers should not still stay a CSA
@@ -729,9 +734,38 @@ Base.similar(arr::ShiftedArray, eltp::Type) = similar(arr, eltp, size(arr))
 Base.similar(arr::ShiftedArray, dims::Tuple{Int64, Vararg{Int64, N}}) where {N} = similar(arr, eltype(arr), dims)
 Base.similar(arr::ShiftedArray) = similar(arr, eltype(arr), size(arr))
 
-# This one is called for reduce operations to allocate like similar
+# this should be used for sum, max etc.
+# function Base.reduce(op, itr::ShiftedArray; init=init)
+#     @show "reduce"
+#     reduce(op, itr.parent; init=init)
+# end
+
+# The order of non-broadcast-reduction does not matter, but ONLY, if the dims keyword is not used.
+function Base.mapreduce(mapf, op, a::ShiftedArray; dims=:, kw...)
+    # @show "mapreduce"
+    res = mapreduce(mapf, op, a.parent; dims=dims, kw...)
+    if !isa(dims, Colon)
+        return ShiftedArray(res, shifts(a), default=default(a))
+    end
+    return res
+end
+
+Base.any(a::ShiftedArray; dims=:) = any(a.parent; dims)
+Base.all(a::ShiftedArray; dims=:) = all(a.parent; dims)
+
+# function Base.mapreducedim!(f, op, B::ShiftedArray, A)
+#     @show "reducedim! 1"
+#     Base.mapreducedim!(f, op, B.parent, A)
+# end
+
+# function Base.mapreducedim!(f, op, B::ShiftedArray, A::ShiftedArray)
+#     @show "reducedim! 2"
+#     Base.mapreducedim!(f, op, B.parent, A.parent)
+# end
+
+# This one is called for reduce operations to allocate like similar, but always a ShiftedArray
 function Base.reducedim_initarray(arr::ShiftedArray, region, init, r::Type{R}) where R
-    # @show "reducedim"
+    @show "reducedim_initarray"
     # @show region
     # @show init
     res = invoke(Base.reducedim_initarray, Tuple{AbstractArray, typeof(region), typeof(init), typeof(r)}, arr, region,init,r)
