@@ -627,6 +627,25 @@ function Base. ==(arr::ShiftedArray, csa::ShiftedArray)
     return all(.==(csa, arr))
 end
 
+function Base.isapprox(csa::ShiftedArray, arr::AbstractArray; kwargs...) 
+    if isequal(Ref(csa), Ref(arr))
+        return true
+    end
+    return isapprox(collect(csa), arr; kwargs...)
+end
+Base.isapprox(arr::AbstractArray, csa::ShiftedArray; kwargs...) = isapprox(csa, arr; kwargs...)
+
+function Base.isapprox(arr::ShiftedArray, csa::ShiftedArray; kwargs...)
+    # @show "SA ≈ SA"
+    if isequal(Ref(csa), Ref(arr))
+        return true
+    end
+    if default(arr)==CircShift() && default(csa) == CircShift() && shifts(arr)==shifts(csa)
+        return isapprox(arr.parent, csa.parent; kwargs...)
+    end
+    return isapprox(collect(csa), arr; kwargs...)
+end
+
 # Base.isequal(arr::AbstractArray, csa::ShiftedArray) = isequal(csa, arr)
 # Base.isequal(csa1::ShiftedArray, csa2::ShiftedArray)  = invoke(isequal, Tuple{ShiftedArray, AbstractArray}, csa1, csa2)
 # Base. ==(csa::ShiftedArray, arr::AbstractArray) = isequal(csa, arr)
