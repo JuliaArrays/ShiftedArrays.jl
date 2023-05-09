@@ -212,13 +212,15 @@ end
     @test sv === svnest
 end
 
-@testset "reverse" begin
-    v = collect(reshape(1:16, 4, 4))
-    cs = ShiftedArrays.circshift(v, (1,1))
-    q = reverse(cs)
-    reverse!(cs)
-    @test collect(q) == collect(cs)
-    @test q[1:1,1:1] == [11;;]
+if VERSION >= v"1.6"
+    @testset "reverse" begin
+        v = collect(reshape(1:16, 4, 4))
+        cs = ShiftedArrays.circshift(v, (1,1))
+        q = reverse(cs)
+        reverse!(cs)
+        @test collect(q) == collect(cs)
+        @test q[1:1,1:1] == [11;;]
+    end
 end
 
 @testset "fftshift and ifftshift" begin
