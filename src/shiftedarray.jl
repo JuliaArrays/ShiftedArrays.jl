@@ -62,12 +62,12 @@ julia> shifts(s)
 struct ShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple, R} <: AbstractArray{Union{T,R}, N} 
     parent::A
 
-    function ShiftedArray(p::AbstractArray{T,N}, n=(); default=missing)::ShiftedArray{T,N,typeof(p), Tuple} where {T,N}
+    function ShiftedArray(p::AbstractArray{T,N}, n=(); default=missing) where {T,N}
         myshifts = padded_tuple(p, n)
         return new{T,N,typeof(p), Tuple{myshifts...}, to_default_type(default)}(p)
     end
     # if a ShiftedArray is wrapped in a ShiftedArray, only a single CSA results ONLY if the default does not change! 
-    function ShiftedArray(p::ShiftedArray{T,N,A,S,R}, n=(); default=default(p))::ShiftedArray{T,N,A,Tuple, R} where {T,N,A,S,R}
+    function ShiftedArray(p::ShiftedArray{T,N,A,S,R}, n=(); default=default(p)) where {T,N,A,S,R}
         myshifts = padded_tuple(p, n)
         if isa(default,R)
             return new{T,N,A, Tuple{(myshifts.+ to_tuple(shifts(typeof(p))))...}, to_default_type(default)}(p.parent)
