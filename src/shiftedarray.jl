@@ -577,8 +577,12 @@ end
 
 refine_view(csa::AbstractArray) = csa
 
-function Base.reverse(csa::ShiftedArray; dims=:)
+function Base.reverse(csa::ShiftedArray; dims)
     rev = Base.reverse(csa.parent; dims=dims)
+    ShiftedArray(rev, .-shifts(csa), default=default(csa))
+end
+function Base.reverse(csa::ShiftedArray)
+    rev = Base.reverse(csa.parent)
     ShiftedArray(rev, .-shifts(csa), default=default(csa))
 end
 
