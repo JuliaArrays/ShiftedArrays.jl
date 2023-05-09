@@ -33,7 +33,7 @@ The recommended constructor is `ShiftedArray(parent, shifts; default = missing)`
 julia> v = [1, 3, 5, 4];
 
 julia> s = ShiftedArray(v, (1,))
--element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing}:
+4-element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing}:
   missing
  1
  3
