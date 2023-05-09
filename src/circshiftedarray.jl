@@ -19,15 +19,15 @@ Use `copy` or `collect` to collect the values of a `ShiftedArray` into a normal 
 julia> v = [1, 3, 5, 4];
 
 julia> s = ShiftedArray(v, (1,))
-4-element CircShiftedVector{Int64, Vector{Int64}}:
- 4
+4-element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing}:
+  missing
  1
  3
  5
 
 julia> copy(s)
-4-element Vector{Int64}:
- 4
+4-element Vector{Union{Missing, Int64}}:
+  missing
  1
  3
  5

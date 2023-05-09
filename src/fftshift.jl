@@ -31,17 +31,17 @@ that dimension.
 
 ```jldoctest
 julia> ShiftedArrays.fftshift([1 0 0 0])
-1×4 CircShiftedArray{Int64, 2, Matrix{Int64}}:
+1×4 CircShiftedArray{Int64, 2, Matrix{Int64}, Tuple{0, 2}}:
  0  0  1  0
 
 julia> ShiftedArrays.fftshift([1 0 0; 0 0 0; 0 0 0])
-3×3 CircShiftedArray{Int64, 2, Matrix{Int64}}:
+3×3 CircShiftedArray{Int64, 2, Matrix{Int64}, Tuple{1, 1}}:
  0  0  0
  0  1  0
  0  0  0
 
 julia> ShiftedArrays.fftshift([1 0 0; 0 0 0; 0 0 0], (1,))
-3×3 CircShiftedArray{Int64, 2, Matrix{Int64}}:
+3×3 CircShiftedArray{Int64, 2, Matrix{Int64}, Tuple{1, 0}}:
  0  0  0
  1  0  0
  0  0  0
@@ -62,17 +62,17 @@ that dimension.
 
 ```jldoctest
 julia> ShiftedArrays.ifftshift([0 0 1 0])
-1×4 CircShiftedArray{Int64, 2, Matrix{Int64}}:
+1×4 CircShiftedArray{Int64, 2, Matrix{Int64}, Tuple{0, 2}}:
  1  0  0  0
 
 julia> ShiftedArrays.ifftshift([0 0 0; 0 1 0; 0 0 0])
-3×3 CircShiftedArray{Int64, 2, Matrix{Int64}}:
+3×3 CircShiftedArray{Int64, 2, Matrix{Int64}, Tuple{2, 2}}:
  1  0  0
  0  0  0
  0  0  0
 
 julia> ShiftedArrays.ifftshift([0 1 0; 0 0 0; 0 0 0], (2,))
-3×3 CircShiftedArray{Int64, 2, Matrix{Int64}}:
+3×3 CircShiftedArray{Int64, 2, Matrix{Int64}, Tuple{0, 2}}:
  1  0  0
  0  0  0
  0  0  0

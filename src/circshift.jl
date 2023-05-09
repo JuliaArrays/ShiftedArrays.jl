@@ -12,7 +12,7 @@ remaining dimensions is assumed to be `0`.
 julia> v = [1, 3, 5, 4];
 
 julia> ShiftedArrays.circshift(v, 1)
-4-element CircShiftedVector{Int64, Vector{Int64}}:
+4-element ShiftedArray{Int64, 1, Vector{Int64}, Tuple{1}, CircShift}:
  4
  1
  3
@@ -21,7 +21,7 @@ julia> ShiftedArrays.circshift(v, 1)
 julia> w = reshape(1:16, 4, 4);
 
 julia> ShiftedArrays.circshift(w, (1, -1))
-4×4 CircShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
+4×4 CircShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Tuple{1, 3}}:
  8  12  16  4
  5   9  13  1
  6  10  14  2

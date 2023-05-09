@@ -33,16 +33,7 @@ The recommended constructor is `ShiftedArray(parent, shifts; default = missing)`
 julia> v = [1, 3, 5, 4];
 
 julia> s = ShiftedArray(v, (1,))
-4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
-  missing
- 1
- 3
- 5
-
-julia> v = [1, 3, 5, 4];
-
-julia> s = ShiftedArray(v, (1,))
-4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
+-element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing}:
   missing
  1
  3
@@ -58,7 +49,7 @@ julia> copy(s)
 julia> v = reshape(1:16, 4, 4);
 
 julia> s = ShiftedArray(v, (0, 2))
-4×4 ShiftedArray{Int64, Missing, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
+4×4 ShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Tuple{0, 2}, Missing}:
  missing  missing  1  5
  missing  missing  2  6
  missing  missing  3  7
@@ -68,10 +59,10 @@ julia> shifts(s)
 (0, 2)
 ```
 """
-struct ShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple, R} <: AbstractArray{Union{T,R}, N} #
+struct ShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple, R} <: AbstractArray{Union{T,R}, N} 
     parent::A
 
-    function ShiftedArray(p::AbstractArray{T,N}, n=(); default=missing)::ShiftedArray{T,N,typeof(p), Tuple, R} where {T,N}
+    function ShiftedArray(p::AbstractArray{T,N}, n=(); default=missing)::ShiftedArray{T,N,typeof(p), Tuple, R} where {T,N,R}
         myshifts = padded_tuple(p, n)
         return new{T,N,typeof(p), Tuple{myshifts...}, to_default_type(default)}(p)
     end
