@@ -586,6 +586,11 @@ end
 
 refine_view(csa::AbstractArray) = csa
 
+function Base.reverse(csa::ShiftedArray; dims=:)
+    rev = Base.reverse(csa.parent; dims=dims)
+    ShiftedArray(rev, .-shifts(csa), default=default(csa))
+end
+
 # these array isequal and == functions are defined to be compatible with the previous definition of equality (equal values only)
 function Base.isequal(csa::ShiftedArray, arr::AbstractArray)
     #@show "is equal"

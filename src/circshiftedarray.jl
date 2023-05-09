@@ -79,4 +79,12 @@ end
 # for speed reasons use the optimized version in Base for actually perfoming the circshift in this case:
 Base.collect(csa::CircShiftedArray{T,N,A,S}) where {T,N,A,S} = Base.circshift(csa.parent, to_tuple(S))
 
+# this is not really fully in place, but the only way to emulate the reverse! function
+function Base.reverse!(csa::CircShiftedArray; dims=:)
+    tmp = Base.reverse(csa.parent; dims=dims)
+    # keep the old shift but compensate by an appropriate circshift
+    Base.circshift!(csa.parent, tmp, -2 .* shifts(csa))
+    return csa
+end
+
 # CircShiftedArray(v::AbstractArray, s::Number) = CircShiftedArray(v, map(mod, padded_tuple(v, s), size(v)))
