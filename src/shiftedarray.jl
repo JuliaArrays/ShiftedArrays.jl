@@ -62,7 +62,7 @@ julia> shifts(s)
 struct ShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple, R} <: AbstractArray{Union{T,R}, N} 
     parent::A
 
-    function ShiftedArray(p::AbstractArray{T,N}, n=(); default=missing)::ShiftedArray{T,N,typeof(p), Tuple, R} where {T,N,R}
+    function ShiftedArray(p::AbstractArray{T,N}, n=(); default=missing)::ShiftedArray{T,N,typeof(p), Tuple} where {T,N}
         myshifts = padded_tuple(p, n)
         return new{T,N,typeof(p), Tuple{myshifts...}, to_default_type(default)}(p)
     end
