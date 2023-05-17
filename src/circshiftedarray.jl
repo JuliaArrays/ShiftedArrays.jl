@@ -1,5 +1,5 @@
 """
-    ShiftedArray(parent::AbstractArray, shifts)
+    CircShiftedArray(parent::AbstractArray, shifts)
 
 Custom `AbstractArray` object to store an `AbstractArray` `parent` circularly shifted
 by `shifts` steps (where `shifts` is a `Tuple` with one `shift` value per dimension of `parent`).
@@ -10,24 +10,24 @@ Use `copy` or `collect` to collect the values of a `ShiftedArray` into a normal 
     but instead a nonnegative number which leads to an equivalent shift.
 
 !!! note
-    If `parent` is itself a `ShiftedArray`, the constructor does not nest
-    `ShiftedArray` objects but rather combines the shifts additively.
+    If `parent` is itself a `CircShiftedArray`, the constructor does not nest
+    `CircShiftedArray` objects but rather combines the shifts additively.
 
 # Examples
 
-```jldoctest shiftedarray
+```jldoctest circshiftedarray
 julia> v = [1, 3, 5, 4];
 
-julia> s = ShiftedArray(v, (1,))
-4-element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing}:
-  missing
+julia> s = CircShiftedArray(v, (1,))
+4-element ShiftedArray{Int64, 1, Vector{Int64}, CircShift}:
+ 4
  1
  3
  5
 
 julia> copy(s)
-4-element Vector{Union{Missing, Int64}}:
-  missing
+4-element Vector{Int64}:
+ 4
  1
  3
  5
@@ -47,20 +47,17 @@ end
 """
     CircShiftedVector{T, A<:AbstractArray}
 
-Shorthand for `ShiftedArray{T, 1, A}`.
+Shorthand for `CircShiftedArray{T, 1, A}`.
 """
 const CircShiftedVector{T, A<:AbstractArray} = ShiftedVector{T, A, CircShift}
 
 CircShiftedVector(v::AbstractVector, n = ()) = CircShiftedArray(v, n)
-# CircShiftedVector(v::AbstractVector, s = ()) = ShiftedArray(v, s)
-# CircShiftedVector(v::AbstractVector, s::Number) = ShiftedArray(v, (s,))
 
 has_circ_type(a::CircShiftedArray) = true
 
 
 # mod1 avoids first subtracting one and then adding one
 @inline function Base.getindex(csa::CircShiftedArray{T,N,A}, i::Vararg{Int,N}) where {T,N,A} 
-    # @show "gi circ"
     getindex(csa.parent, (mod1(i[j]-shifts(csa)[j], size(csa.parent, j)) for j in 1:N)...)
 end
 
@@ -70,8 +67,6 @@ end
 end
 
 @inline function Base.setindex!(csa::CircShiftedArray{T,N,A}, v, i::Vararg{Int,N}) where {T,N,A}
-    # @show "si circ"
-    #(setindex!(csa.parent, v, (mod1(i[j]-to_tuple(S)[j], size(csa.parent, j)) for j in 1:N)...); v)
     setindex!(csa.parent, v, (mod1(i[j]-shifts(csa)[j], size(csa.parent, j)) for j in 1:N)...)
     csa
 end
@@ -86,5 +81,3 @@ function Base.reverse!(csa::CircShiftedArray; dims=:)
     Base.circshift!(csa.parent, tmp, -2 .* shifts(csa))
     return csa
 end
-
-# CircShiftedArray(v::AbstractArray, s::Number) = CircShiftedArray(v, map(mod, padded_tuple(v, s), size(v)))

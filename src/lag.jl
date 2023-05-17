@@ -13,7 +13,7 @@ remaining dimensions is assumed to be `0`.
 julia> v = [1, 3, 5, 4];
 
 julia> ShiftedArrays.lag(v)
-4-element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing}:
+4-element ShiftedVector{Int64, Vector{Int64}, Missing}:
   missing
  1
  3
@@ -23,7 +23,7 @@ julia> w = 1:2:9
 1:2:9
 
 julia> s = ShiftedArrays.lag(w, 2)
-5-element ShiftedVector{Int64, StepRange{Int64, Int64}, Tuple{2}, Missing}:
+5-element ShiftedVector{Int64, StepRange{Int64, Int64}, Missing}:
   missing
   missing
  1
@@ -41,7 +41,7 @@ julia> copy(s)
 julia> v = reshape(1:16, 4, 4);
 
 julia> s = ShiftedArrays.lag(v, (0, 2))
-4×4 ShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Tuple{0, 2}, Missing}:
+4×4 ShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Missing}:
  missing  missing  1  5
  missing  missing  2  6
  missing  missing  3  7
@@ -67,7 +67,7 @@ remaining dimensions is assumed to be `0`.
 julia> v = [1, 3, 5, 4];
 
 julia> ShiftedArrays.lead(v)
-4-element ShiftedVector{Int64, Vector{Int64}, Tuple{-1}, Missing}:
+4-element ShiftedVector{Int64, Vector{Int64}, Missing}:
  3
  5
  4
@@ -77,7 +77,7 @@ julia> w = 1:2:9
 1:2:9
 
 julia> s = ShiftedArrays.lead(w, 2)
-5-element ShiftedVector{Int64, StepRange{Int64, Int64}, Tuple{-2}, Missing}:
+5-element ShiftedVector{Int64, StepRange{Int64, Int64}, Missing}:
  5
  7
  9
@@ -95,7 +95,7 @@ julia> copy(s)
 julia> v = reshape(1:16, 4, 4);
 
 julia> s = ShiftedArrays.lead(v, (0, 2))
-4×4 ShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Tuple{0, -2}, Missing}:
+4×4 ShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Missing}:
   9  13  missing  missing
  10  14  missing  missing
  11  15  missing  missing
