@@ -1,16 +1,8 @@
 using Base
+using Core.Compiler
 
 # just a type to indicate that this is a ShiftedArray rather than the ShiftedArray 
 struct CircShift end
-# function CSA_Type(T1::TypeVar, T2::TypeVar)
-#     @show T2.name
-#     return ifelse(T2.name == :CircShift, T1, Union{T1, T2})
-# end
-# CSA_Type(T::TypeVar, ::Type{CircShift}) = T
-#CSA_Type(::Type{T1},::Type{T2}) where {T1,T2} = Union{T1,T2}
-# to ensure that eltype(CircShiftedArray) is not a Union type.
-#CSA_Type(::Type{T},::CircShift) where {T} = Type{T}
-
 
 """
     ShiftedArray(parent::AbstractArray, shifts, default)
@@ -59,41 +51,27 @@ julia> shifts(s)
 (0, 2)
 ```
 """
-struct ShiftedArray{T, N, A<:AbstractArray{T,N}, myshift<:Tuple, R} <: AbstractArray{Union{T,R}, N} 
+struct ShiftedArray{T, N, A<:AbstractArray, myshift<:Tuple, R} <: AbstractArray{T, N} 
     parent::A
 
-    function ShiftedArray(p::AbstractArray{T,N}, n=(); default=missing) where {T,N}
+    function ShiftedArray(p::AbstractArray{Tb,N}, n=(); default=missing) where {Tb,N}
         myshifts = padded_tuple(p, n)
-        return new{T,N,typeof(p), Tuple{myshifts...}, to_default_type(default)}(p)
+        return new{shifted_array_base_type(Tb, default), N, typeof(p), Tuple{myshifts...}, to_default_type(default)}(p)
     end
     # if a ShiftedArray is wrapped in a ShiftedArray, only a single CSA results ONLY if the default does not change! 
-    function ShiftedArray(p::ShiftedArray{T,N,A,S,R}, n=(); default=default(p)) where {T,N,A,S,R}
+    function ShiftedArray(p::ShiftedArray{Tb,N,A,S,R}, n=(); default=default(p)) where {Tb,N,A,S,R}
         myshifts = padded_tuple(p, n)
         if isa(default,R)
-            return new{T,N,A, Tuple{(myshifts.+ to_tuple(shifts(typeof(p))))...}, to_default_type(default)}(p.parent)
+            return new{shifted_array_base_type(Tb, default),N,A, Tuple{(myshifts.+ to_tuple(shifts(typeof(p))))...}, to_default_type(default)}(p.parent)
         else
             return new{eltype(p),N,typeof(p), Tuple{myshifts...}, to_default_type(default)}(p)
         end
+
     end
-    # if default changed, we need to create a double-wrapped array
-    # function ShiftedArray(p::ShiftedArray{T,N,A,S,R}, n=(); default=missing) where {T,N,A,S,R}
-    #     @show R
-    #     @show "c3"
-    #     myshifts = padded_tuple(p, n)
-    #     return new{eltype(p),N,typeof(p), Tuple{myshifts...}, to_default_type(default)}(p)
-    # end
-    # function ShiftedArray(p::AbstractArray{T,N}, n=(), R=undef)::ShiftedArray{T,N,typeof(p), Tuple, R} where {T,N}
-    #     myshifts = map(mod, padded_tuple(p, n), size(p))
-    #     ws::NTuple{N,Int} = wrapshift(myshifts, size(p))
-    #     return new{T,N,typeof(p), Tuple{ws...}, CircShift}(p)
-    # end
-    # # if a ShiftedArray is wrapped in a ShiftedArray, only a single CSA results 
-    # function ShiftedArray(p::ShiftedArray{T,N,A,S}, n=())::ShiftedArray{T,N,A,Tuple, R} where {T,N,A,S}
-    #     myshifts = map(mod, padded_tuple(p, n), size(p))
-    #     ws::NTuple{N,Int} = wrapshift(myshifts .+ to_tuple(shifts(typeof(p))), size(p))
-    #     return new{T,N,A, Tuple{ws...}, CircShift}(p.parent)
-    # end
 end
+
+shifted_array_base_type(::Type{T}, default::R) where {T,R} = Union{T,R}
+shifted_array_base_type(::Type{T}, default::CircShift) where {T} = T
 
 to_default_type(default::Val)=typeof(default)
 to_default_type(default::Type)=default
