@@ -37,8 +37,8 @@ end
     @test ismissing(sv[3, 3])
     @test shifts(sv) == (-2,0)
     @test isequal(sv, ShiftedArray(v, -2))
-    #@test isequal(@inferred(ShiftedArray(v, (2,))), @inferred(ShiftedArray(v, 2)))
-    #@test isequal(@inferred(ShiftedArray(v)), @inferred(ShiftedArray(v, (0, 0))))
+    @test isequal(@inferred(ShiftedArray(v, (2,))), @inferred(ShiftedArray(v, 2)))
+    @test isequal(@inferred(ShiftedArray(v)), @inferred(ShiftedArray(v, (0, 0))))
     @test isequal(ShiftedArray(v, (2,)), ShiftedArray(v, 2))
     @test isequal(ShiftedArray(v), ShiftedArray(v, (0, 0)))
     s = ShiftedArray(v, (0, -2));
@@ -120,9 +120,8 @@ end
     @test sv[1, 3] == 11
     @test shifts(sv) == (2, 0)
     @test isequal(sv, CircShiftedArray(v, -2))
-    # @inferred tests the result type to be inferrable. Does NOT work for CircShiftedArray
-    # @test isequal(@inferred(CircShiftedArray(v, 2)), @inferred(CircShiftedArray(v, (2,))))
-    # @test isequal(@inferred(CircShiftedArray(v)), @inferred(CircShiftedArray(v, (0, 0))))
+    @test isequal(@inferred(CircShiftedArray(v, 2)), @inferred(CircShiftedArray(v, (2,))))
+    @test isequal(@inferred(CircShiftedArray(v)), @inferred(CircShiftedArray(v, (0, 0))))
     @test isequal(CircShiftedArray(v, 2), CircShiftedArray(v, (2,)))
     @test isequal(CircShiftedArray(v), CircShiftedArray(v, (0, 0)))
     s = CircShiftedArray(v, (0, 2))
