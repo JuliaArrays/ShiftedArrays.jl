@@ -3,8 +3,17 @@ uuid = "1277b4bf-5013-50f5-be3d-901d8477a67a"
 repo = "https://github.com/JuliaArrays/ShiftedArrays.jl.git"
 version = "2.0.0"
 
+[weakdeps]
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+
+[extensions]
+CUDASupportExt = ["CUDA", "Adapt"]
+
 [compat]
-julia = "1"
+CUDA = "5.1.1"
+Adapt = "3.7.2"
+julia = "1.9"
 
 [extras]
 AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"
