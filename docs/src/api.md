@@ -36,4 +36,6 @@ default
 ```@docs
 ShiftedArrays.padded_tuple
 ShiftedArrays.ft_center_diff
+ShiftedArrays.materialize_checkerboard!
+ShiftedArrays.refine_view
 ```

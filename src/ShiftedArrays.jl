@@ -3,6 +3,7 @@ module ShiftedArrays
 import Base: checkbounds, getindex, setindex!, parent, size, axes
 export ShiftedArray, ShiftedVector, shifts, default
 export CircShiftedArray, CircShiftedVector
+export CircShift
 
 include("shiftedarray.jl")
 include("circshiftedarray.jl")

@@ -15,11 +15,11 @@ julia> v = reshape(1:16, 4, 4)
  4  8  12  16
 
 julia> s = ShiftedArray(v, (2, 0))
-4×4 ShiftedArray{Int64, Missing, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
+4×4 ShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Tuple{2, 0}, Missing}:
   missing   missing    missing    missing
   missing   missing    missing    missing
  1         5          9         13
- 2         6         10         14 
+ 2         6         10         14
 ```
 
 The parent Array as well as the amount of shifting can be recovered with `parent` and `shifts` respectively.
@@ -53,7 +53,7 @@ If you pass an integer, it will shift in the first dimension:
 
 ```julia
 julia> ShiftedArray(v, 1)
-4×4 ShiftedArray{Int64, Missing, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
+4×4 ShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Tuple{1, 0}, Missing}:
   missing   missing    missing    missing
  1         5          9         13
  2         6         10         14
@@ -64,7 +64,7 @@ A custom default value (other than `missing`) can be provided with the `default`
 
 ```julia
 julia> ShiftedArray([1.2, 3.1, 4.5], 1, default = NaN)
-3-element ShiftedVector{Float64, Float64, Vector{Float64}}:
+3-element ShiftedVector{Float64, Vector{Float64}, Tuple{1}, Val{NaN}}:
  NaN
    1.2
    3.1
@@ -76,7 +76,7 @@ Accessing indexes outside the `ShiftedArray` give a `BoundsError`, even if the s
 
 ```julia
 julia> ShiftedArray([1, 2, 3], 1)[4]
-ERROR: BoundsError: attempt to access 3-element ShiftedVector{Int64, Missing, Vector{Int64}} at index [4]
+ERROR: BoundsError: attempt to access 3-element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing} at index [4]
 ```
 
 ## Shifting the data
@@ -87,11 +87,11 @@ Using the `ShiftedArray` type, this package provides two operations for lazily s
 julia> v = [1, 3, 5, 4];
 
 julia> ShiftedArrays.lag(v)
-4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
+4-element ShiftedVector{Int64, Vector{Int64}, Tuple{1}, Missing}:
   missing
  1
  3
- 5       
+ 5     
 
 julia> v .- ShiftedArrays.lag(v) # compute difference from previous element without unnecessary allocations
 4-element Vector{Union{Missing, Int64}}:
@@ -101,7 +101,7 @@ julia> v .- ShiftedArrays.lag(v) # compute difference from previous element with
  -1       
 
 julia> s = ShiftedArrays.lag(v, 2) # shift by more than one element
-4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
+4-element ShiftedVector{Int64, Vector{Int64}, Tuple{2}, Missing}:
   missing
   missing
  1
@@ -114,7 +114,7 @@ julia> s = ShiftedArrays.lag(v, 2) # shift by more than one element
 julia> v = [1, 3, 5, 4];
 
 julia> ShiftedArrays.lead(v)
-4-element ShiftedVector{Int64, Missing, Vector{Int64}}:
+4-element ShiftedVector{Int64, Vector{Int64}, Tuple{-1}, Missing}:
  3
  5
  4
@@ -134,7 +134,7 @@ Our implementation of `circshift` relies on them to avoid copying:
 julia> w = reshape(1:16, 4, 4);
 
 julia> s = ShiftedArrays.circshift(w, (1, -1))
-4×4 CircShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}}:
+4×4 CircShiftedArray{Int64, 2, Base.ReshapedArray{Int64, 2, UnitRange{Int64}, Tuple{}}, Tuple{1, 3}}:
  8  12  16  4
  5   9  13  1
  6  10  14  2
