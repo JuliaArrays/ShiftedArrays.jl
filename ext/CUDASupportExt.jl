@@ -4,7 +4,7 @@ using Adapt
 using ShiftedArrays
 using Base # to allow displaying such arrays without causing the single indexing CUDA error
 
-Adapt.adapt_structure(to, x::CircShiftedArray{T, D, CT}) where {T,D,CT<:CuArray} = CircShiftedArray(adapt(to, parent(x)), shifts(x));
+Adapt.adapt_structure(to, x::CircShiftedArray{T, D}) where {T, D} = CircShiftedArray(adapt(to, parent(x)), shifts(x));
 function Base.Broadcast.BroadcastStyle(::Type{T})  where (T<: CircShiftedArray{<:Any,<:Any,<:CuArray})
     CUDA.CuArrayStyle{ndims(T)}()
 end
