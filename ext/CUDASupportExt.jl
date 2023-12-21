@@ -9,7 +9,7 @@ function Base.Broadcast.BroadcastStyle(::Type{T})  where (T<: CircShiftedArray{<
     CUDA.CuArrayStyle{ndims(T)}()
 end
 
-Adapt.adapt_structure(to, x::ShiftedArray{T, M, N, <:CuArray}) where {T,M,N} =
+Adapt.adapt_structure(to, x::ShiftedArray{T, M, N}) where {T, M, N} =
 # lets do this for the ShiftedArray type
 ShiftedArray(adapt(to, parent(x)), shifts(x); default=ShiftedArrays.default(x))
 function Base.Broadcast.BroadcastStyle(::Type{T})  where (T<: ShiftedArray{<:Any,<:Any,<:Any,<:CuArray})
