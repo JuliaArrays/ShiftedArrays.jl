@@ -1,6 +1,6 @@
 using ShiftedArrays, Test
 using AbstractFFTs 
-use_cuda = true;  # set this to true to test ShiftedArrays for the CuArray datatype
+use_cuda = false;  # set this to true to test ShiftedArrays for the CuArray datatype
 if (use_cuda)
     using CUDA
     CUDA.allowscalar(true); # needed for some of the comparisons
